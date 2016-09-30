@@ -1,0 +1,165 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+{% block pagetitle %}Change Settings {% endblock %}
+
+{% block SideBarTitle %}Change Settings{% endblock %}
+
+{% block titlelink %}"/composts"{% endblock %}
+{% block maintitle %}Change Settings{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="/login">{{ login }}</a></li>#}
+{% endblock %}
+
+
+{% block ListItems %}
+    <li><a href="/">Dashboard</a></li>
+    <li><a href="/composts">Composts</a></li>
+    <li><a href="/settings">Settings</a></li>
+    {#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-lg-7">
+            <form role="form" method="post" action="/change_compost/save_all">
+                <div class="form-group">
+                    {#                    <label for="id">Compost id:</label>#}
+                    <input type="hidden" class="form-control" id="dev_id" value="{{ device.id }}" name="dev_id">
+                    <br>
+                    <label for="name">Compost Name:</label>
+                    <input type="text" class="form-control" id="name" value="{{ device.name }}" name="name">
+                    <br>
+                    <label for="country">Country:</label>
+                    <input type="text" class="form-control" id="country" value="{{ device.country }}" name="country">
+                    <br>
+                    <label for="region">Region:</label>
+                    <input type="text" class="form-control" id="region" value="{{ device.region }}" name="region">
+                    <br>
+                    <label for="area">Area:</label>
+                    <input type="text" class="form-control" id="area" value="{{ device.area }}" name="area">
+                    <br>
+                    <label for="ip">IP Address:</label>
+                    <input type="text" class="form-control" id="ip" value="{{ device.ip }}" name="ip">
+                    <br>
+                    <label for="roof_fans">Roof Fans:</label>
+                    <br>
+                    <input type="checkbox" class="form-control" name="roof_fans" checked id="roof_fans">
+                    <br>
+                    <br>
+                    <label for="ventilation">Ventilation:</label>
+                    <br>
+                    <input type="checkbox" class="form-control" name="ventilation" checked id="ventilation">
+                    <br>
+                    <br>
+                    <label for="stirring">Stirring:</label>
+                    <br>
+                    <input type="checkbox" class="form-control" name="stirring" checked id="stirring">
+                    <br>
+                    <br>
+                    <label for="rails_blow">Rails Blow:</label>
+                    <br>
+                    <input type="checkbox" class="form-control" name="rails_blow" checked id="rails_blow">
+                    <br>
+                    <br>
+                    <label for="watering">Watering:</label>
+                    <br>
+                    <input type="checkbox" class="form-control" name="watering" checked id="watering">
+                </div>
+                <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script type="text/javascript">
+
+        function getBool(val) {
+            return !!JSON.parse(String(val).toLowerCase());
+        }
+
+
+        {#        $.fn.bootstrapSwitch.defaults.size = 'mini';#}
+        {#        $("#roof_fans").bootstrapSwitch('state', false);#}
+        $("#roof_fans").bootstrapSwitch('state', getBool('{{ device.roof_fans }}'));
+        $("#ventilation").bootstrapSwitch('state', getBool('{{ device.ventilation }}'));
+        $("#stirring").bootstrapSwitch('state', getBool('{{ device.stirring }}'));
+        $("#rails_blow").bootstrapSwitch('state', getBool('{{ device.rails_blow }}'));
+        $("#watering").bootstrapSwitch('state', getBool('{{ device.watering }}'));
+
+        {#        ROOF FANS         #}
+        $("#roof_fans").on('switchChange.bootstrapSwitch', function (event, state) {
+{#            console.log(this); // DOM element#}
+{#            console.log(event); // jQuery event#}
+{#            console.log(state); // true | false#}
+
+            payload = {
+                dev_id: '{{ device.id }}',
+                actuator: 'roof_fans',
+                status: state
+            };
+            $.post('/change_compost/change_state', payload);
+        });
+        {#        VENTILATION         #}
+        $("#ventilation").on('switchChange.bootstrapSwitch', function (event, state) {
+{#            console.log(this); // DOM element#}
+{#            console.log(event); // jQuery event#}
+{#            console.log(state); // true | false#}
+
+            payload = {
+                dev_id: '{{ device.id }}',
+                actuator: 'ventilation',
+                status: state
+            };
+            $.post('/change_compost/change_state', payload);
+        });
+        {#        STIRRING         #}
+        $("#stirring").on('switchChange.bootstrapSwitch', function (event, state) {
+{#            console.log(this); // DOM element#}
+{#            console.log(event); // jQuery event#}
+{#            console.log(state); // true | false#}
+
+            payload = {
+                dev_id: '{{ device.id }}',
+                actuator: 'stirring',
+                status: state
+            };
+            $.post('/change_compost/change_state', payload);
+        });
+        {#        RAILS BLOW         #}
+        $("#rails_blow").on('switchChange.bootstrapSwitch', function (event, state) {
+{#            console.log(this); // DOM element#}
+{#            console.log(event); // jQuery event#}
+{#            console.log(state); // true | false#}
+
+            payload = {
+                dev_id: '{{ device.id }}',
+                actuator: 'rails_blow',
+                status: state
+            };
+            $.post('/change_compost/change_state', payload);
+        });
+        {#        WATERING         #}
+        $("#watering").on('switchChange.bootstrapSwitch', function (event, state) {
+{#            console.log(this); // DOM element#}
+{#            console.log(event); // jQuery event#}
+{#            console.log(state); // true | false#}
+
+            payload = {
+                dev_id: '{{ device.id }}',
+                actuator: 'watering',
+                status: state
+            };
+            $.post('/change_compost/change_state', payload);
+        });
+
+
+    </script>
+
+
+
+{% endblock %}

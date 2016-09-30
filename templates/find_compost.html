@@ -1,0 +1,183 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+
+
+{% block head %}
+    <link rel="stylesheet"
+          href="/static/validator/bootstrapValidator.min.css"/>
+    <script type="text/javascript"
+            src="/static/validator/bootstrapValidator.min.js"></script>
+{% endblock %}
+
+
+
+{% block pagetitle %}Find Change Compost Settings{% endblock %}
+
+{% block sidabartitlelink %}"/composts"{% endblock %}
+{% block SideBarTitle %}{% endblock %}
+
+{% block titlelink %}"/composts"{% endblock %}
+{% block maintitle %}Find Change Compost Settings{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="#">{{ login }}</a></li>#}
+{% endblock %}
+
+
+
+{% block ListItems %}
+    <li><a href="/">Dashboard</a></li>
+    <li><a href="/composts">Composts</a></li>
+    <li><a href="/settings">Settings</a></li>
+    {#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+
+{% block avatar %}
+    {#    {{ users.email | gravatar }}#}
+{% endblock %}
+
+
+{% block body %}
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Input Compost Name" id="search_input">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" id="search_btn">Search!</button>
+      </span>
+            </div><!-- /input-group -->
+
+            <br>
+            <div class="container">
+                <ul class="list-group" id="compost_list">
+                    {# spawn search results  #}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <button class="btn btn-primary" type="button" id="add_compost">Add/Remove Compost <span id="plus_icon"
+                    class="glyphicon glyphicon-plus"></span></button>
+            <br>
+            <br>
+            <form role="form" method="post" action="/change_compost/save_all" hidden="true" id="form_group">
+                <div class="form-group">
+                    <label class=" control-label" for="name">Compost Name:</label>
+                    <input type="text" class="form-control" id="name" placeholder="Compost Name" name="name">
+                    <br>
+                    <label class=" control-label" for="country">Country:</label>
+                    <input type="text" class="form-control" id="country" placeholder="Country" name="country">
+                    <br>
+                    <label class=" control-label" for="region">Region:</label>
+                    <input type="text" class="form-control" id="region" placeholder="Region" name="region">
+                    <br>
+                    <label class=" control-label" for="area">Area:</label>
+                    <input type="text" class="form-control" id="area" placeholder="Area" name="area">
+                    <br>
+                    <label class=" control-label" for="ip">IP Address:</label>
+                    <input type="text" class="form-control" id="ip" placeholder="IP Address" name="ip">
+                    <br>
+
+                </div>
+                <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
+            </form>
+
+
+            <div class="form-group">
+                <div class="col-md-9 col-md-offset-3">
+                    <div id="messages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+
+{#      MAP BLOCK     #}
+{% block map %}
+{% endblock %}
+
+
+{#    JAVASCRIPT BLOCK#}
+{% block javascript %}
+    {#              FIND COMPOST DEVICES ACCORDING TO SEARCH STRING     #}
+    <script type="text/javascript">
+        $('#search_btn').click(function () {
+            $.post("{{ url_for('search_compost') }}", {search_text: $("#search_input").val()}, function (response) {
+                data = JSON.parse(response);
+                $("#compost_list").empty();
+                for (let i = 0; i < data.length; i++) {
+                    var link = "/change_compost/" + data[i]["name"];
+                    var index = "/" + data[i]["name"];
+                    $("#compost_list").append("<li><h4>" + data[i]['name'] +
+                            " <a href='" + index +"'>Dashboard</a> " +
+                            "<a href='" + link + "'>Settings</a>" +
+                            "</h4></li>")
+                }
+            })
+        });
+
+        {#                 ADD COMPOST DEVICE         #}
+        $('#add_compost').click(function () {
+            $("#name").val("");
+            $("#country").val("");
+            $("#region").val("");
+            $("#area").val("");
+            $("#ip").val("");
+            $("#form_group").slideToggle();
+            $("#plus_icon").toggleClass("glyphicon-plus glyphicon-minus");
+        });
+
+        $('#form_group').bootstrapValidator({
+            container: '#messages',
+            feedbackIcons: {
+            valid: 'glyphicon glyphicon-ok',
+            invalid: 'glyphicon glyphicon-remove-circle',
+            validating: 'glyphicon glyphicon-refresh'
+        },
+            fields: {
+                name: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Name is required and cannot be empty'
+                        }
+                    }
+                },
+                country: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Country is required and cannot be empty'
+                        }
+                    }
+                },
+                region: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Region is required and cannot be empty'
+                        }
+                    }
+                },
+                area: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Area is required and cannot be empty'
+                        }
+                    }
+                },
+                ip: {
+                    validators: {
+                        notEmpty: {
+                            message: 'IP Address name is required and cannot be empty'
+                        }
+                    }
+                },
+            }
+        });
+
+    </script>
+{% endblock %}
+                      

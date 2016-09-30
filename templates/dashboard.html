@@ -1,0 +1,539 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+{% block pagetitle %}Dashboard{% endblock %}
+
+{% block sidabartitlelink %}"/"{% endblock %}
+{% block SideBarTitle %}Dashboard{% endblock %}
+
+{% block titlelink %}"/"{% endblock %}
+{% block maintitle %}Dashboard{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="/login">{{ login }}</a></li>#}
+{% endblock %}
+
+
+{% block ListItems %}
+    <li><a href="/">Dashboard</a></li>
+    <li><a href="/composts">Composts</a></li>
+    <li><a href="/settings">Settings</a></li>
+{#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+{% block body %}
+<h4>Name:{{ compost_device.name }}    Country: {{ compost_device.country }}   Region: {{ compost_device.region }}   Area: {{ compost_device.region }}   IP: {{ compost_device.ip }}</h4>
+    <br>
+    <div class="row">
+        <div class="col-lg-6">
+            <div id="container1"></div>
+        </div>
+    <div class="col-lg-6">
+            <div id="container2"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div id="container3"></div>
+        </div>
+    <div class="col-lg-6">
+            <div id="container4"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div id="container5"></div>
+        </div>
+    <div class="col-lg-6">
+            <div id="container6"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div id="container7"></div>
+        </div>
+    </div>
+
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(function () {
+            {#            AIR TEMPERATURE                 #}
+            $('#container1').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series1 = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+{#                                y = Math.random();#}
+                                    y = _.random(18, 22);
+                            series1.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'AIR TEMPERATURE'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+{#                            y: Math.random()#}
+                            y:_.random(18, 22)
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+            {#     AIR HUMIDITY   #}
+            $('#container2').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = Math.random();
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'AIR HUMIDITY'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+{#            SOIL TEMPERATURE#}
+            $('#container3').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = Math.random();
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'SOIL TEMPERATURE'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+{#            SOIL HUMIDITY#}
+            $('#container4').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = Math.random();
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'SOIL HUMIDITY'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+{#            OUTSIDE TEMPERATURE#}
+            $('#container5').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = Math.random();
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'OUTSIDE TEMPERATURE'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+{#            OUTSIDE HUMIDITY#}
+            $('#container6').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = Math.random();
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'OUTSIDE HUMIDITY'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+{#            SUNLIGHT#}
+            $('#container7').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = Math.random();
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'SUNLIGHT'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Random data',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: Math.random()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+        });
+    </script>
+
+{% endblock %}
