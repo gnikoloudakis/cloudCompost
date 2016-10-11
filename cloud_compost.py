@@ -7,7 +7,6 @@ from flask import Flask, request, json, render_template, redirect, jsonify
 from flask_mongoengine import MongoEngine
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
-from m_stats import Stats
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -39,14 +38,6 @@ dummy_data = {
 ################## GLOBAL VARIABLES #########################
 threadFlag_1 = True
 threadFlag_2 = True
-sunlight_in = Stats
-sunlight_out = Stats
-soil_temperature = Stats
-soil_humidity = Stats
-air_temperature_in = Stats
-air_temperature_out = Stats
-air_humidity_in = Stats
-air_humidity_out = Stats
 
 
 # ##################    MODELS     ###################################
@@ -116,49 +107,25 @@ class measurements(db.Document):
 ###########################################################################
 
 #############################  BASIC FUNCTIONS  ###########################
-def read_variables(compost_id):
-    ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
-    ser.write('/variables\r'.encode())
-    update_variables(ser.readline())
-    Log(l_timestamp=datetime.now(), action='variables', compost=compost_id)
-
-
 def update_variables(data):
     dataDict = json.loads(data)
     compost_id = compost_devices.objects(name=dataDict['name']).first().id
     measurements(m_type="sunlight_in", m_value=dataDict['variables']['sunlight_in'], compost=compost_id,
                  m_timestamp=datetime.now()).save()
-    if sunlight_in.add_points(dataDict['variables']['sunlight_in']):
-        pass
     measurements(m_type="sunlight_out", m_value=dataDict['variables']['sunlight_out'],
-                 compost=compost_id, m_timestamp=datetime.now()).save()
-    if sunlight_out.add_points(dataDict['variables']['sunlight_out']):
-        pass
+                 compost="5784e5afe609a80ad0bef2c5", m_timestamp=datetime.now()).save()
     measurements(m_type="soil_temp", m_value=dataDict['variables']['soil_temp'], compost=compost_id,
                  m_timestamp=datetime.now()).save()
-    if soil_temperature.add_points(dataDict['variables']['soil_temp']):
-        pass
     measurements(m_type="soil_hum", m_value=dataDict['variables']['soil_hum'], compost=compost_id,
                  m_timestamp=datetime.now()).save()
-    if soil_humidity.add_points(dataDict['variables']['soil_hum']):
-        pass
     measurements(m_type="air_temp_in", m_value=dataDict['variables']['air_temp_in'], compost=compost_id,
                  m_timestamp=datetime.now()).save()
-    if air_temperature_in.add_points(dataDict['variables']['air_temp_in']):
-        pass
     measurements(m_type="air_hum_in", m_value=dataDict['variables']['air_hum_in'], compost=compost_id,
                  m_timestamp=datetime.now()).save()
-    if air_humidity_in.add_points(dataDict['variables']['air_hum_in']):
-        pass
     measurements(m_type="air_temp_out", m_value=dataDict['variables']['air_temp_out'],
-                 compost=compost_id, m_timestamp=datetime.now()).save()
-    if air_temperature_out.add_points(dataDict['variables']['air_temp_out']):
-        pass
+                 compost="5784e5afe609a80ad0bef2c5", m_timestamp=datetime.now()).save()
     measurements(m_type="air_hum_out", m_value=dataDict['variables']['air_hum_out'], compost=compost_id,
                  m_timestamp=datetime.now()).save()
-    if air_humidity_out.add_points(dataDict['variables']['air_hum_out']):
-        pass
-
     compost_Flags.update(set__Motor_F=bool(dataDict['variables']['Motor_R']),
                          set__Motor_B=bool(dataDict['variables']['Motor_L']),
                          set__Fan=bool(dataDict['variables']['Fan']),
@@ -263,6 +230,13 @@ def stopVent(compost_id):
         Log(l_timestamp=datetime.now(), action='Ventilation Stopped', compost=compost_id)
 
 
+def read_variables(compost_id):
+    ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
+    ser.write('/variables\r'.encode())
+    update_variables(ser.readline())
+    Log(l_timestamp=datetime.now(), action='variables', compost=compost_id)
+
+
 def add_measurement():
     measurements(m_type="sunlight_in", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
                  m_timestamp=datetime.now()).save()
@@ -286,7 +260,7 @@ sched2.add_job(add_measurement, 'interval', seconds=5)
 
 
 # sched.add_job(read_variables, 'interval', seconds=5)
-# sched.add_job(daily_stir, 'cron', day_of_week='mon-fri', hour=12)
+# sched.add_job(daily_stir(), 'cron', day_of_week='mon-fri', hour=12)
 
 
 @app.route('/')
@@ -375,9 +349,9 @@ def search_compost():
 
 @app.route('/change_compost/<compost>')
 def change_compost(compost):
-    device = compost_devices.objects(name=compost).first()
-    flags = compost_Flags.objects(compost=device.id).first()
-    return render_template('change_compost.html', device=device, flags=flags)
+        device = compost_devices.objects(name=compost).first()
+        flags = compost_Flags.objects(compost=device.id).first()
+        return render_template('change_compost.html', device=device, flags=flags)
 
 
 @app.route('/change_compost/save_all', methods=['POST'])
