@@ -9,6 +9,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     {#    <script src="../../static/js/bootstrap.js"></script>#}
 
+    {#    Time Picker #}
+    <script src="/static/timepicker/jquery.timepicker.min.js"></script>
+    <link rel="stylesheet" href="/static/timepicker/jquery.timepicker.css">
+
+    {#    Moments  date time parser converter #}
+    <script src="/static/moment/moment-with-locales.js"></script>
+    {# Toggle Buttons js #}
+    <script src="/static/js/toggles.js"></script>
+
     {#BOOTSTRAP#}
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet prefetch" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
@@ -22,20 +31,20 @@
             crossorigin="anonymous"></script>
 
     {#MAPS AND LOCATION#}
-{#    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAyeOvQsvoNanKXf2MS8PmiHKDK-xOdVg"></script>#}
-{#    <script type="text/javascript" src="../../static/js/maps.js"></script>#}
+    {#    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAyeOvQsvoNanKXf2MS8PmiHKDK-xOdVg"></script>#}
+    {#    <script type="text/javascript" src="../../static/js/maps.js"></script>#}
 
     {#SIDEBAR CSS#}
     <link rel="stylesheet" href="../../static/css/sidebar.css">
 
     {# DATETIME PICKER#}
-{#    <script type="text/javascript" src="/static/datetimepicker/js/bootstrap-datetimepicker.js"#}
-{#            charset="UTF-8"></script>#}
+    {#    <script type="text/javascript" src="/static/datetimepicker/js/bootstrap-datetimepicker.js"#}
+    {#            charset="UTF-8"></script>#}
 
     {#EDITABLE TABLES#}
 
-{#    <link rel='stylesheet prefetch'#}
-{#          href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css'>#}
+    {#    <link rel='stylesheet prefetch'#}
+    {#          href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css'>#}
 
     {#    <link rel='stylesheet prefetch' href='http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css'>#}
 
@@ -45,10 +54,11 @@
     {#<script src='http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js'></script>#}
     <script src='http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js'></script>
 
-{#              HIGHCHARTS             #}
+    {#              HIGHCHARTS             #}
     <script src="/static/highcharts/highcharts.js"></script>
+    <script src="/static/js/create_chart.js"></script>
 
-{#   BOOTSTRAP SWITCHES      #}
+    {#   BOOTSTRAP SWITCHES      #}
     <link rel="stylesheet" href="/static/switch/css/bootstrap3/bootstrap-switch.min.css">
     <script type="text/javascript" src="/static/switch/js/bootstrap-switch.min.js"></script>
 
@@ -71,6 +81,12 @@
                 </a>
             </li>
             {% block ListItems %}{% endblock %}
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/composts">Composts</a></li>
+            <li><a href="/settings">Settings</a></li>
+            <li><a href="/log">Log</a></li>
+            <li><a href="/errors">Errors</a></li>
+
 
         </ul>
     </div>
@@ -102,11 +118,11 @@
                     {% block body %}{% endblock %}
 
                 </div>
-{#                <div class="col-lg-5">#}
-{##}
-{#                    {% block map %}{% endblock %}#}
-{##}
-{#                </div>#}
+                {#                <div class="col-lg-5">#}
+                {##}
+                {#                    {% block map %}{% endblock %}#}
+                {##}
+                {#                </div>#}
             </div>
         </div>
     </div>

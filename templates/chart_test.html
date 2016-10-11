@@ -1,0 +1,48 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+{% block pagetitle %}charts{% endblock %}
+
+{% block sidabartitlelink %}"/"{% endblock %}
+{% block SideBarTitle %}charts{% endblock %}
+
+{% block titlelink %}"/"{% endblock %}
+{% block maintitle %}charts{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="/login">{{ login }}</a></li>#}
+{% endblock %}
+
+
+{% block ListItems %}
+{#    <li><a href="/">Dashboard</a></li>#}
+{#    <li><a href="/composts">Composts</a></li>#}
+{#    <li><a href="/settings">Settings</a></li>#}
+    {#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+{% block body %}
+
+    <br>
+    <div class="row">
+        <div class="col-lg-6">
+            <div id="container1">
+                container #1
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div id="container2">
+                container #2
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script type="text/javascript">
+        create_chart('#container1', 'spline', 'Soil Humidity', 'Humidity(%)', 'time','Values',1000);
+    </script>
+
+
+{% endblock %}

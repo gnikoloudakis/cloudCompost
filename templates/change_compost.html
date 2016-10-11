@@ -13,15 +13,15 @@
 
 
 {% block ListItems %}
-    <li><a href="/">Dashboard</a></li>
-    <li><a href="/composts">Composts</a></li>
-    <li><a href="/settings">Settings</a></li>
+    {#    <li><a href="/">Dashboard</a></li>#}
+    {#    <li><a href="/composts">Composts</a></li>#}
+    {#    <li><a href="/settings">Settings</a></li>#}
     {#    <li><a href="/init_db">Init DB</a></li>#}
 {% endblock %}
 
 {% block body %}
     <div class="row">
-        <div class="col-lg-7">
+        <div class="col-md-7">
             <form role="form" method="post" action="/change_compost/save_all">
                 <div class="form-group">
                     {#                    <label for="id">Compost id:</label>#}
@@ -42,31 +42,78 @@
                     <label for="ip">IP Address:</label>
                     <input type="text" class="form-control" id="ip" value="{{ device.ip }}" name="ip">
                     <br>
-                    <label for="roof_fans">Roof Fans:</label>
+
+                    <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
                     <br>
-                    <input type="checkbox" class="form-control" name="roof_fans" checked id="roof_fans">
-                    <br>
-                    <br>
-                    <label for="ventilation">Ventilation:</label>
-                    <br>
-                    <input type="checkbox" class="form-control" name="ventilation" checked id="ventilation">
-                    <br>
-                    <br>
-                    <label for="stirring">Stirring:</label>
-                    <br>
-                    <input type="checkbox" class="form-control" name="stirring" checked id="stirring">
-                    <br>
-                    <br>
-                    <label for="rails_blow">Rails Blow:</label>
-                    <br>
-                    <input type="checkbox" class="form-control" name="rails_blow" checked id="rails_blow">
-                    <br>
-                    <br>
-                    <label for="watering">Watering:</label>
-                    <br>
-                    <input type="checkbox" class="form-control" name="watering" checked id="watering">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {#######################################    CONTROLS   ###################################################}
+                            <br>
+                            <br>
+                            <label for="Motor_F">Motor Forward:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Motor_F %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Motor_F">{% if flags.Motor_F %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Motor_B">Motor Backward:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Motor_B %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Motor_B">{% if flags.Motor_B %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Fan">Roof Fan:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Fan %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Fan">{% if flags.Fan %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Vent">Ventilation:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Vent %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Vent">{% if flags.Vent %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Door_1">Door 1:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Door_1 %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Door_1" disabled>{% if flags.Door_1 %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Emergency_Stop">Emergency Stop:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Emergency_Stop %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Emergency_Stop" disabled>{% if flags.Emergency_Stop %}ON{% else %}
+                                OFF{% endif %}</button>
+                        </div>
+                        <div class="col-md-4">
+                            <br>
+                            <br>
+                            <label for="Motor_R">Motor Right:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Motor_R %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Motor_R">{% if flags.Motor_R %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Motor_L">Motor Left:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Motor_L %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Motor_L">{% if flags.Motor_L %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                        </div>
+
+                    </div>
                 </div>
-                <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
+
             </form>
         </div>
     </div>
@@ -74,87 +121,32 @@
 
 {% endblock %}
 
-
 {% block javascript %}
     <script type="text/javascript">
-
-        function getBool(val) {
-            return !!JSON.parse(String(val).toLowerCase());
-        }
-
-
-        {#        $.fn.bootstrapSwitch.defaults.size = 'mini';#}
-        {#        $("#roof_fans").bootstrapSwitch('state', false);#}
-        $("#roof_fans").bootstrapSwitch('state', getBool('{{ device.roof_fans }}'));
-        $("#ventilation").bootstrapSwitch('state', getBool('{{ device.ventilation }}'));
-        $("#stirring").bootstrapSwitch('state', getBool('{{ device.stirring }}'));
-        $("#rails_blow").bootstrapSwitch('state', getBool('{{ device.rails_blow }}'));
-        $("#watering").bootstrapSwitch('state', getBool('{{ device.watering }}'));
-
-        {#        ROOF FANS         #}
-        $("#roof_fans").on('switchChange.bootstrapSwitch', function (event, state) {
-{#            console.log(this); // DOM element#}
-{#            console.log(event); // jQuery event#}
-{#            console.log(state); // true | false#}
-
-            payload = {
-                dev_id: '{{ device.id }}',
-                actuator: 'roof_fans',
-                status: state
-            };
-            $.post('/change_compost/change_state', payload);
+        {#        $("#Motor_F").click(toggle_buttons("{{ device.id }}", "#Motor_F"));#}
+        $("#Motor_F").click(function () {
+            toggle_buttons("{{ device.id }}", "#Motor_F");
         });
-        {#        VENTILATION         #}
-        $("#ventilation").on('switchChange.bootstrapSwitch', function (event, state) {
-{#            console.log(this); // DOM element#}
-{#            console.log(event); // jQuery event#}
-{#            console.log(state); // true | false#}
-
-            payload = {
-                dev_id: '{{ device.id }}',
-                actuator: 'ventilation',
-                status: state
-            };
-            $.post('/change_compost/change_state', payload);
+        $("#Motor_B").click(function () {
+            toggle_buttons("{{ device.id }}", "#Motor_B");
         });
-        {#        STIRRING         #}
-        $("#stirring").on('switchChange.bootstrapSwitch', function (event, state) {
-{#            console.log(this); // DOM element#}
-{#            console.log(event); // jQuery event#}
-{#            console.log(state); // true | false#}
-
-            payload = {
-                dev_id: '{{ device.id }}',
-                actuator: 'stirring',
-                status: state
-            };
-            $.post('/change_compost/change_state', payload);
+        $("#Motor_R").click(function () {
+            toggle_buttons("{{ device.id }}", "#Motor_R");
         });
-        {#        RAILS BLOW         #}
-        $("#rails_blow").on('switchChange.bootstrapSwitch', function (event, state) {
-{#            console.log(this); // DOM element#}
-{#            console.log(event); // jQuery event#}
-{#            console.log(state); // true | false#}
-
-            payload = {
-                dev_id: '{{ device.id }}',
-                actuator: 'rails_blow',
-                status: state
-            };
-            $.post('/change_compost/change_state', payload);
+        $("#Motor_L").click(function () {
+            toggle_buttons("{{ device.id }}", "#Motor_L");
         });
-        {#        WATERING         #}
-        $("#watering").on('switchChange.bootstrapSwitch', function (event, state) {
-{#            console.log(this); // DOM element#}
-{#            console.log(event); // jQuery event#}
-{#            console.log(state); // true | false#}
-
-            payload = {
-                dev_id: '{{ device.id }}',
-                actuator: 'watering',
-                status: state
-            };
-            $.post('/change_compost/change_state', payload);
+        $("#Fan").click(function () {
+            toggle_buttons("{{ device.id }}", "#Fan");
+        });
+        $("#Vent").click(function () {
+            toggle_buttons("{{ device.id }}", "#Vent");
+        });
+        $("#Door_1").click(function () {
+            toggle_buttons("{{ device.id }}", "#Door_1");
+        });
+        $("#Emergency_Stop").click(function () {
+            toggle_buttons("{{ device.id }}", "#Emergency_Stop");
         });
 
 

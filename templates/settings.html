@@ -14,20 +14,59 @@
 
 
 {% block ListItems %}
-    <li><a href="/">Dashboard</a></li>
-    <li><a href="/composts">Composts</a></li>
-    <li><a href="/settings">Settings</a></li>
-    <li><a href="/init_db">Init DB</a></li>
+{#    <li><a href="/">Dashboard</a></li>#}
+{#    <li><a href="/composts">Composts</a></li>#}
+{#    <li><a href="/settings">Settings</a></li>#}
+    {#    <li><a href="/init_db">Init DB</a></li>#}
 {% endblock %}
 
 {% block body %}
 
-    settings
+    <div class="row">
+        <div class="col-lg-7">
+            <form role="form" method="post" action="/settings/save_all">
+                <div class="form-group">
+                    {#                    <label for="id">Compost id:</label>#}
+                    <label for="time">Daily Stirring Time:</label>
+                    <input type="text" class="form-control" id="time" value="{{ settings.daily_steering_time }}"
+                           name="time">
+                    <br>
+                    <label for="duration">Stirring Duration (Seconds):</label>
+                    <input type="text" class="form-control" id="duration" value="{{ settings.steering_duration }}"
+                           name="duration">
+                    <br>
+                    <label for="lsht">Lowest Soil Humidity Threshold (%):</label>
+                    <input type="text" class="form-control" id="lsht" value="{{ settings.lowest_soil_humidity }}"
+                           name="lsht">
+                    <br>
+                    <label for="hsht">Highest Soil Humidity Threshold (%):</label>
+                    <input type="text" class="form-control" id="hsht" value="{{ settings.highest_soil_humidity }}"
+                           name="hsht">
+                    <br>
+                    <label for="lstt">Lowest Soil Temperature Threshold (Celsius):</label>
+                    <input type="text" class="form-control" id="lstt" value="{{ settings.lowest_soil_temperature }}"
+                           name="lstt">
+                    <br>
+                    <label for="usb">USB Port:</label>
+                    <input type="text" class="form-control" id="usb" value="{{ settings.usb_port }}"
+                           name="usb">
+                    <br>
+                    <label for="sleep">Sleep Time for Motors (Seconds):</label>
+                    <input type="text" class="form-control" id="sleep" value="{{ settings.sleep_time_for_motors }}"
+                           name="sleep">
+                </div>
+                <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
+            </form>
+        </div>
+    </div>
 
 
 {% endblock %}
 
 
 {% block javascript %}
+    <script type="application/javascript">
+        $('#time').timepicker();
+    </script>
 
 {% endblock %}

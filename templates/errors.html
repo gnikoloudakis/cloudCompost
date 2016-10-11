@@ -1,0 +1,53 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+{% block pagetitle %}Errors{% endblock %}
+
+{% block sidabartitlelink %}"#"{% endblock %}
+{% block SideBarTitle %}Errors{% endblock %}
+
+{% block titlelink %}"#"{% endblock %}
+{% block maintitle %}Errors{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="/login">{{ login }}</a></li>#}
+{% endblock %}
+
+
+{% block ListItems %}
+    {#    <li><a href="/">Dashboard</a></li>#}
+    {#    <li><a href="/composts">Composts</a></li>#}
+    {#    <li><a href="/settings">Settings</a></li>#}
+    {#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+{% block body %}
+
+    <div class="col-md-8">
+        <table style="width: inherit">
+            <tr>
+                <th>Timestamp</th>
+                <th>Error</th>
+                <th>Compost</th>
+            </tr>
+            {% for i in  errors %}
+                <tr>
+                    <td>
+                        {{ i.e_timestamp }}
+                    </td>
+                    <td>
+                        {{ i.error }}
+                    </td>
+                    <td>
+                        {{ i.compost.name }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+
+{% endblock %}
