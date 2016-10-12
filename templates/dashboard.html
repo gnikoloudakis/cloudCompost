@@ -69,14 +69,14 @@
 
 {% block javascript %}
     <script type="text/javascript">
-        create_chart('#container1', 'spline', 'sunlight_in', 'Sunlight Inside (%)', 'time', 'Sunlight (%)', 5000);
-        create_chart('#container2', 'spline', 'sunlight_out', 'Sunlight Outside (%)', 'time', 'Sunlight (%)', 5000);
-        create_chart('#container3', 'spline', 'soil_temp', 'Soil Temperature (°C)', 'time', 'Temperature (Celsius)', 5000);
-        create_chart('#container4', 'spline', 'soil_hum', 'Soil Humidity (%)', 'time', 'Humidity (%)', 5000);
-        create_chart('#container5', 'spline', 'air_temp_in', 'Air Temperature Inside (°C)', 'time', 'Temperature (Celsius)', 5000);
-        create_chart('#container6', 'spline', 'air_hum_in', 'Air Humidity Inside (%)', 'time', 'Humidity (%)', 5000);
-        create_chart('#container7', 'spline', 'air_temp_out', 'Air Temperature Outside (°C)', 'time', 'Temperature (Celsius)', 5000);
-        create_chart('#container8', 'spline', 'air_hum_out', 'Air Humidity Outside (%)', 'time', 'Humidity (%)', 5000);
+        create_chart('#container1', 'spline', 'sunlight_in', 'Sunlight Inside (%)','Sunlight (%)', 'time', 'values', 5000);
+        create_chart('#container2', 'spline', 'sunlight_out', 'Sunlight Outside (%)', 'Sunlight (%)', 'time', 'values', 5000);
+        create_chart('#container3', 'spline', 'soil_temp', 'Soil Temperature (°C)', 'Temperature (°C)', 'time', 'values', 5000);
+        create_chart('#container4', 'spline', 'soil_hum', 'Soil Humidity (%)', 'Humidity (%)', 'time', 'values', 5000);
+        create_chart('#container5', 'spline', 'air_temp_in', 'Air Temperature Inside (°C)', 'Temperature (°C)', 'time', 'values', 5000);
+        create_chart('#container6', 'spline', 'air_hum_in', 'Air Humidity Inside (%)', 'Humidity (%)', 'time', 'values', 5000);
+        create_chart('#container7', 'spline', 'air_temp_out', 'Air Temperature Outside (°C)', 'Temperature (°C)', 'time', 'values', 5000);
+        create_chart('#container8', 'spline', 'air_hum_out', 'Air Humidity Outside (%)', 'Humidity (%)', 'time', 'values', 5000);
 
 
     </script>
