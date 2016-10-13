@@ -144,7 +144,7 @@ def update_variables(data):
                  m_timestamp=datetime.now()).save()
     si = sunlight_in.add_points(dataDict['variables']['sunlight_in'])
     if si:
-        print(si)
+        pass
     measurements(m_type="sunlight_out", m_value=dataDict['variables']['sunlight_out'],
                  compost=compost_ID, m_timestamp=datetime.now()).save()
     if sunlight_out.add_points(dataDict['variables']['sunlight_out']):
@@ -304,7 +304,7 @@ def stopVent():
 
 def hourly_veltilation():
     startVent()
-    time.sleep(120)  ####  to be replaced with ventilation time
+    time.sleep(300)  ####  to be replaced with ventilation time
     stopVent()
 
 
@@ -528,6 +528,7 @@ def update_controls():
 
 
 if __name__ == '__main__':
+    # dfdsfsdf
     # init()
     # sched.start()
     sched2.start()
