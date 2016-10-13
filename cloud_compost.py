@@ -7,6 +7,7 @@ from flask import Flask, request, json, render_template, redirect, jsonify
 from flask_mongoengine import MongoEngine
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
+from m_stats import Stats
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -25,6 +26,11 @@ db = MongoEngine(app)
 # Configure ApScheduler
 sched = BackgroundScheduler()
 sched2 = BackgroundScheduler()
+sched3 = BackgroundScheduler()
+sched4 = BackgroundScheduler()
+
+#####################  COMPOST ID  ##########################
+compost_ID = ''
 
 ######################  DUMMY DATA   ###########################
 dummy_data = {
@@ -38,6 +44,15 @@ dummy_data = {
 ################## GLOBAL VARIABLES #########################
 threadFlag_1 = True
 threadFlag_2 = True
+
+sunlight_in = Stats
+sunlight_out = Stats
+soil_temperature = Stats
+soil_humidity = Stats
+air_temperature_in = Stats
+air_temperature_out = Stats
+air_humidity_in = Stats
+air_humidity_out = Stats
 
 
 # ##################    MODELS     ###################################
@@ -106,26 +121,59 @@ class measurements(db.Document):
 
 ###########################################################################
 
+
 #############################  BASIC FUNCTIONS  ###########################
+def init():
+    ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
+    ser.write('/variables\r'.encode())
+    dataDict = json.loads(ser.readline())
+    compost_ID = compost_devices.objects(name=dataDict['name']).first().id
+
+
+def read_variables():
+    ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
+    ser.write('/variables\r'.encode())
+    update_variables(ser.readline())
+    Log(l_timestamp=datetime.now(), action='variables', compost=compost_ID)
+
+
 def update_variables(data):
     dataDict = json.loads(data)
-    compost_id = compost_devices.objects(name=dataDict['name']).first().id
-    measurements(m_type="sunlight_in", m_value=dataDict['variables']['sunlight_in'], compost=compost_id,
+    # compost_id = compost_devices.objects(name=dataDict['name']).first().id
+    measurements(m_type="sunlight_in", m_value=dataDict['variables']['sunlight_in'], compost=compost_ID,
                  m_timestamp=datetime.now()).save()
+    si = sunlight_in.add_points(dataDict['variables']['sunlight_in'])
+    if si:
+        print(si)
     measurements(m_type="sunlight_out", m_value=dataDict['variables']['sunlight_out'],
-                 compost="5784e5afe609a80ad0bef2c5", m_timestamp=datetime.now()).save()
-    measurements(m_type="soil_temp", m_value=dataDict['variables']['soil_temp'], compost=compost_id,
+                 compost=compost_ID, m_timestamp=datetime.now()).save()
+    if sunlight_out.add_points(dataDict['variables']['sunlight_out']):
+        pass
+    measurements(m_type="soil_temp", m_value=dataDict['variables']['soil_temp'], compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="soil_hum", m_value=dataDict['variables']['soil_hum'], compost=compost_id,
+    if soil_temperature.add_points(dataDict['variables']['soil_temp']):
+        pass
+    measurements(m_type="soil_hum", m_value=dataDict['variables']['soil_hum'], compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="air_temp_in", m_value=dataDict['variables']['air_temp_in'], compost=compost_id,
+    if soil_humidity.add_points(dataDict['variables']['soil_hum']):
+        pass
+    measurements(m_type="air_temp_in", m_value=dataDict['variables']['air_temp_in'], compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="air_hum_in", m_value=dataDict['variables']['air_hum_in'], compost=compost_id,
+    if air_temperature_in.add_points(dataDict['variables']['air_temp_in']):
+        pass
+    measurements(m_type="air_hum_in", m_value=dataDict['variables']['air_hum_in'], compost=compost_ID,
                  m_timestamp=datetime.now()).save()
+    if air_humidity_in.add_points(dataDict['variables']['air_hum_in']):
+        pass
     measurements(m_type="air_temp_out", m_value=dataDict['variables']['air_temp_out'],
-                 compost="5784e5afe609a80ad0bef2c5", m_timestamp=datetime.now()).save()
-    measurements(m_type="air_hum_out", m_value=dataDict['variables']['air_hum_out'], compost=compost_id,
+                 compost=compost_ID, m_timestamp=datetime.now()).save()
+    if air_temperature_out.add_points(dataDict['variables']['air_temp_out']):
+        pass
+    measurements(m_type="air_hum_out", m_value=dataDict['variables']['air_hum_out'], compost=compost_ID,
                  m_timestamp=datetime.now()).save()
+    if air_humidity_out.add_points(dataDict['variables']['air_hum_out']):
+        pass
+
     compost_Flags.update(set__Motor_F=bool(dataDict['variables']['Motor_R']),
                          set__Motor_B=bool(dataDict['variables']['Motor_L']),
                          set__Fan=bool(dataDict['variables']['Fan']),
@@ -134,133 +182,161 @@ def update_variables(data):
                          set__Emergency_Stop=bool(dataDict['variables']['Emergency_Stop']))
 
 
-def motor_forward(compost_id):
+def motor_forward():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/stirForwardOn\r'.encode())  # Stir Forward
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if compost_Flags.objects(id=compost_id).first().Motor_F:
-        Log(l_timestamp=datetime.now(), action='Motor Forward Started', compost=compost_id)
+    if compost_Flags.objects(id=compost_ID).first().Motor_F:
+        Log(l_timestamp=datetime.now(), action='Motor Forward Started', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Forward FAILED to Start', compost=compost_ID)
     time.sleep(compost_Settings.objects.first().steering_duration)
     ser.write('/stirForwardOff\r'.encode())  # Stir Forward Off
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if not compost_Flags.objects(id=compost_id).first().Motor_F:
-        Log(l_timestamp=datetime.now(), action='Motor Forward Stopped', compost=compost_id)
+    if not compost_Flags.objects(id=compost_ID).first().Motor_F:
+        Log(l_timestamp=datetime.now(), action='Motor Forward Stopped', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Forward FAILED to Stop', compost=compost_ID)
 
 
-def motor_backward(compost_id):
+def motor_backward():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/stirBackwoardOn\r'.encode())  # Stir Forward
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if compost_Flags.objects(id=compost_id).first().Motor_B:
-        Log(l_timestamp=datetime.now(), action='Motor Backward Started', compost=compost_id)
+    if compost_Flags.objects(id=compost_ID).first().Motor_B:
+        Log(l_timestamp=datetime.now(), action='Motor Backward Started', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Backward FAILED to Start', compost=compost_ID)
     time.sleep(compost_Settings.objects.first().steering_duration)
     ser.write('/stirBackwoardOff\r'.encode())  # Stir Forward Off
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if not compost_Flags.objects(id=compost_id).first().Motor_B:
-        Log(l_timestamp=datetime.now(), action='Motor Backward Stopped', compost=compost_id)
+    if not compost_Flags.objects(id=compost_ID).first().Motor_B:
+        Log(l_timestamp=datetime.now(), action='Motor Backward Stopped', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Backward FAILED to Stop', compost=compost_ID)
 
 
-def motor_right(compost_id):
+def motor_right():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/stirRightOn\r'.encode())  # Stir Right
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if compost_Flags.objects(id=compost_id).first().Motor_R:
-        Log(l_timestamp=datetime.now(), action='Motor Right Started', compost=compost_id)
+    if compost_Flags.objects(id=compost_ID).first().Motor_R:
+        Log(l_timestamp=datetime.now(), action='Motor Right Started', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Right FAILED to Start', compost=compost_ID)
     time.sleep(compost_Settings.objects.first().steering_duration)
     ser.write('/stirRightOff\r'.encode())  # Stir Right Off
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if not compost_Flags.objects(id=compost_id).first().Motor_R:
-        Log(l_timestamp=datetime.now(), action='Motor Right Stopped', compost=compost_id)
+    if not compost_Flags.objects(id=compost_ID).first().Motor_R:
+        Log(l_timestamp=datetime.now(), action='Motor Right Stopped', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Right FAILED to Stop', compost=compost_ID)
 
 
-def motor_left(compost_id):
+def motor_left():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/stirLeftOn\r'.encode())  # Stir Left
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if compost_Flags.objects(id=compost_id).first().Motor_L:
-        Log(l_timestamp=datetime.now(), action='Motor Left Started', compost=compost_id)
+    if compost_Flags.objects(id=compost_ID).first().Motor_L:
+        Log(l_timestamp=datetime.now(), action='Motor Left Started', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Left Failed to Start', compost=compost_ID)
     time.sleep(compost_Settings.objects.first().steering_duration)
     ser.write('/stirLeftOff\r'.encode())  # Stir Left Off
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if not compost_Flags.objects(id=compost_id).first().Motor_L:
-        Log(l_timestamp=datetime.now(), action='Motor Left Stopped', compost=compost_id)
+    if not compost_Flags.objects(id=compost_ID).first().Motor_L:
+        Log(l_timestamp=datetime.now(), action='Motor Left Stopped', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Motor Left FAILED to Stop', compost=compost_ID)
 
 
-def startFan(compost_id):
+def startFan():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/startFan\r'.encode())
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if compost_Flags.objects(id=compost_id).first().Fan:
-        Log(l_timestamp=datetime.now(), action='Roof Fan Started', compost=compost_id)
+    if compost_Flags.objects(id=compost_ID).first().Fan:
+        Log(l_timestamp=datetime.now(), action='Roof Fan Started', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Roof Fan FAILED to Start', compost=compost_ID)
 
 
-def stopFan(compost_id):
+def stopFan():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/stopFan\r'.encode())
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if not compost_Flags.objects(id=compost_id).first().Fan:
-        Log(l_timestamp=datetime.now(), action='Roof Fan Stopped', compost=compost_id)
+    if not compost_Flags.objects(id=compost_ID).first().Fan:
+        Log(l_timestamp=datetime.now(), action='Roof Fan Stopped', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Roof Fan FAILED to Stop', compost=compost_ID)
 
 
-def startVent(compost_id):
+def startVent():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/startVent\r'.encode())
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if compost_Flags.objects(id=compost_id).first().Vent:
-        Log(l_timestamp=datetime.now(), action='Ventilation Started', compost=compost_id)
+    if compost_Flags.objects(id=compost_ID).first().Vent:
+        Log(l_timestamp=datetime.now(), action='Ventilation Started', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Ventilation FAILED to Start', compost=compost_ID)
 
 
-def stopVent(compost_id):
+def stopVent():
     ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
     ser.write('/stopVent\r'.encode())
     ser.write('/variables\r'.encode())
     update_variables(ser.readline())
-    if not compost_Flags.objects(id=compost_id).first().Vent:
-        Log(l_timestamp=datetime.now(), action='Ventilation Stopped', compost=compost_id)
+    if not compost_Flags.objects(id=compost_ID).first().Vent:
+        Log(l_timestamp=datetime.now(), action='Ventilation Stopped', compost=compost_ID)
+    else:
+        Log(l_timestamp=datetime.now(), action='Ventilation FAILED to Stop', compost=compost_ID)
 
 
-def read_variables(compost_id):
-    ser = serial.Serial(compost_Settings.objects.first().usb_port, 115200)  # setup serial communication port
-    ser.write('/variables\r'.encode())
-    update_variables(ser.readline())
-    Log(l_timestamp=datetime.now(), action='variables', compost=compost_id)
+def hourly_veltilation():
+    startVent()
+    time.sleep(120)  ####  to be replaced with ventilation time
+    stopVent()
 
 
 def add_measurement():
-    measurements(m_type="sunlight_in", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="sunlight_in", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="sunlight_out", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="sunlight_out", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="soil_temp", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="soil_temp", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="soil_hum", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="soil_hum", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="air_temp_in", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="air_temp_in", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="air_hum_in", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="air_hum_in", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="air_temp_out", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="air_temp_out", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
-    measurements(m_type="air_hum_out", m_value=random.uniform(20.0, 85.0), compost="57f38923e609a8140424851b",
+    measurements(m_type="air_hum_out", m_value=random.uniform(20.0, 85.0), compost=compost_ID,
                  m_timestamp=datetime.now()).save()
 
 
-sched2.add_job(add_measurement, 'interval', seconds=5)
+###################################################################################################################
+##############  SET SCHEDULERS   ##################################################################################
+sched2.add_job(add_measurement, 'interval', seconds=10)
+sched3.add_job(hourly_veltilation, 'interval', minutes=3)
 
 
-# sched.add_job(read_variables, 'interval', seconds=5)
-# sched.add_job(daily_stir(), 'cron', day_of_week='mon-fri', hour=12)
+# sched.add_job(read_variables, 'interval', seconds=10)
+# sched.add_job(daily_stir, 'cron', day_of_week='mon-fri', hour=12)
+
+###################################################################################################################
 
 
 @app.route('/')
@@ -349,9 +425,9 @@ def search_compost():
 
 @app.route('/change_compost/<compost>')
 def change_compost(compost):
-        device = compost_devices.objects(name=compost).first()
-        flags = compost_Flags.objects(compost=device.id).first()
-        return render_template('change_compost.html', device=device, flags=flags)
+    device = compost_devices.objects(name=compost).first()
+    flags = compost_Flags.objects(compost=device.id).first()
+    return render_template('change_compost.html', device=device, flags=flags)
 
 
 @app.route('/change_compost/save_all', methods=['POST'])
@@ -402,9 +478,10 @@ def test():
 @app.route('/preliminary/measurements', methods=['GET', 'POST'])
 def prem_meas():
     data = request.form
-    print(data['m_type'])
+    # print(data['m_type'])
     qq = measurements.objects(m_type=data['m_type']).order_by('m_timestamp')
-    return jsonify(qq)
+    # print(len(qq))
+    return jsonify(qq[(len(qq) - 50):])
 
 
 @app.route('/measurements', methods=['GET', 'POST'])
@@ -451,6 +528,9 @@ def update_controls():
 
 
 if __name__ == '__main__':
+    # init()
     # sched.start()
     sched2.start()
+    # sched3.start()
+
     app.run(host='0.0.0.0', port=5000)
