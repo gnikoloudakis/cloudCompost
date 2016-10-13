@@ -46,7 +46,7 @@
                     <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
                     <br>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             {#######################################    CONTROLS   ###################################################}
                             <br>
                             <br>
@@ -78,21 +78,9 @@
                                     id="Vent">{% if flags.Vent %}ON{% else %}OFF{% endif %}</button>
                             <br>
                             <br>
-                            <label for="Door_1">Door 1:</label>
-                            <br>
-                            <button type="button"
-                                    class="btn {% if flags.Door_1 %}btn-success{% else %}btn-danger{% endif %}"
-                                    id="Door_1" disabled>{% if flags.Door_1 %}ON{% else %}OFF{% endif %}</button>
-                            <br>
-                            <br>
-                            <label for="Emergency_Stop">Emergency Stop:</label>
-                            <br>
-                            <button type="button"
-                                    class="btn {% if flags.Emergency_Stop %}btn-success{% else %}btn-danger{% endif %}"
-                                    id="Emergency_Stop" disabled>{% if flags.Emergency_Stop %}ON{% else %}
-                                OFF{% endif %}</button>
+
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <br>
                             <br>
                             <label for="Motor_R">Motor Right:</label>
@@ -109,6 +97,19 @@
                                     id="Motor_L">{% if flags.Motor_L %}ON{% else %}OFF{% endif %}</button>
                             <br>
                             <br>
+                            <label for="Door_1">Door 1:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Door_1 %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Door_1" disabled>{% if flags.Door_1 %}ON{% else %}OFF{% endif %}</button>
+                            <br>
+                            <br>
+                            <label for="Emergency_Stop">Emergency Stop:</label>
+                            <br>
+                            <button type="button"
+                                    class="btn {% if flags.Emergency_Stop %}btn-success{% else %}btn-danger{% endif %}"
+                                    id="Emergency_Stop" disabled>{% if flags.Emergency_Stop %}ON{% else %}
+                                OFF{% endif %}</button>
                         </div>
 
                     </div>

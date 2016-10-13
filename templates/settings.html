@@ -14,18 +14,19 @@
 
 
 {% block ListItems %}
-{#    <li><a href="/">Dashboard</a></li>#}
-{#    <li><a href="/composts">Composts</a></li>#}
-{#    <li><a href="/settings">Settings</a></li>#}
+    {#    <li><a href="/">Dashboard</a></li>#}
+    {#    <li><a href="/composts">Composts</a></li>#}
+    {#    <li><a href="/settings">Settings</a></li>#}
     {#    <li><a href="/init_db">Init DB</a></li>#}
 {% endblock %}
 
 {% block body %}
 
     <div class="row">
-        <div class="col-lg-7">
-            <form role="form" method="post" action="/settings/save_all">
-                <div class="form-group">
+        <form role="form" method="post" action="/settings/save_all">
+            <div class="form-group">
+                <div class="col-md-4">
+
                     {#                    <label for="id">Compost id:</label>#}
                     <label for="time">Daily Stirring Time:</label>
                     <input type="text" class="form-control" id="time" value="{{ settings.daily_steering_time }}"
@@ -54,11 +55,39 @@
                     <label for="sleep">Sleep Time for Motors (Seconds):</label>
                     <input type="text" class="form-control" id="sleep" value="{{ settings.sleep_time_for_motors }}"
                            name="sleep">
+                    <br>
+                    <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
                 </div>
-                <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
-            </form>
-        </div>
+                <div class="col-md-4">
+                    <label for="sb_time">Soil Backwards Time:</label>
+                    <input type="text" class="form-control" id="sb_time" value="{{ settings.daily_soil_backward_time }}"
+                           name="sb_time">
+                    <br>
+                    <label for="mf_time">Motor Forward Duration (Seconds):</label>
+                    <input type="text" class="form-control" id="mf_time" value="{{ settings.motor_F_duration }}"
+                           name="mf_time">
+                    <br>
+                    <label for="mb_time">Motor Backward Duration (Seconds):</label>
+                    <input type="text" class="form-control" id="mb_time" value="{{ settings.motor_B_duration }}"
+                           name="mb_time">
+                    <br>
+                    <label for="mr_time">Motor Right Duration (Seconds):</label>
+                    <input type="text" class="form-control" id="mr_time" value="{{ settings.motor_R_duration }}"
+                           name="mr_time">
+                    <br>
+                    <label for="ml_time">Motor Left Duration (Seconds):</label>
+                    <input type="text" class="form-control" id="ml_time" value="{{ settings.motor_L_duration }}"
+                           name="ml_time">
+                    <br>
+                    <label for="vent_time">Ventilation Duration (Seconds):</label>
+                    <input type="text" class="form-control" id="vent_time" value="{{ settings.vent_duration }}"
+                           name="vent_time">
+                    <br>
+                </div>
+            </div>
+        </form>
     </div>
+
 
 
 {% endblock %}
@@ -66,7 +95,15 @@
 
 {% block javascript %}
     <script type="application/javascript">
+    {#h	12 hour without leading 0.	hh	12 hour with leading 0.#}
+    {#H	24 hour without leading 0.	HH	24 hour with leading 0.#}
+    {#m	minutes without leading 0.	mm	minutes with leading 0.#}
+    {#s	seconds without leading 0.	ss	seconds with leading 0.#}
+    {#p	AM or PM#}
+    {#        $('input.timepicker').timepicker({timeFormat: 'h:mm:ss p'});#}
+
         $('#time').timepicker();
+        $('#sb_time').timepicker();
     </script>
 
 {% endblock %}

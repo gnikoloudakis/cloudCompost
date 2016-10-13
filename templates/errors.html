@@ -29,7 +29,7 @@
                 <th>Error</th>
                 <th>Compost</th>
             </tr>
-            {% for i in  errors %}
+            {% for i in  eerrors %}
                 <tr>
                     <td>
                         {{ i.e_timestamp }}
@@ -43,6 +43,8 @@
                 </tr>
             {% endfor %}
         </table>
+        <br>
+        <button class="btn btn-danger" onclick="window.location.href='/errors/clear'">Clear Error File</button>
     </div>
 
 {% endblock %}
