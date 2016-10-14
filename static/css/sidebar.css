@@ -5,6 +5,11 @@
  */
 
 /* Toggle Styles */
+.badge {
+    text-indent: 0px;
+    /*line-height: 40px;*/
+    position: relative
+}
 
 #wrapper {
     padding-left: 0;
@@ -74,7 +79,7 @@
 .sidebar-nav li a:hover {
     text-decoration: none;
     color: #fff;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-nav li a:active,
@@ -96,11 +101,12 @@
     color: #fff;
     background: none;
 }
+
 /*.glyphicon{*/
-    /*float: left;*/
+/*float: left;*/
 /*}*/
 
-@media(min-width:768px) {
+@media (min-width: 768px) {
     #wrapper {
         padding-left: 250px;
     }

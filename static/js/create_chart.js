@@ -163,9 +163,10 @@ function dummy_chart(container) {
 //var wdata = [];
 function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, delay) {
     var wdata = [];
+    var state = false;
     $.post('/preliminary/measurements', {m_type: mtype})
         .done(function (m_data) {
-            for (var i = m_data.length - 20; i < m_data.length; i++) {
+            for (var i = 0; i < m_data.length; i++) {
                 //console.log(typeof m_data[i].m_value);
                 //console.log(Date(m_data[i].m_timestamp.$date));
                 if (m_data[i].m_value) {
@@ -183,8 +184,7 @@ function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, d
                     );
                 }
             }
-
-            console.log(wdata);
+            //console.log(wdata);
             $(container).highcharts({
                 chart: {
                     type: type,
@@ -192,14 +192,17 @@ function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, d
                     marginRight: 10,
                     events: {
                         load: function () {
-
                             // set up the updating of the chart each second
                             var series = this.series[0];
                             setInterval(function () {
+                                //console.log(wdata.length);
+                                if (wdata.length >= 50) {
+                                    state = true;
+                                }
                                 var x = (new Date()).getTime(), // current time
                                     y = Math.random();
-                                $.post('/measurements', {m_type: 'soil_hum'}).done(function (wwww) {
-                                    series.addPoint([wwww.m_timestamp.$date, wwww.m_value], true, true);
+                                $.post('/measurements', {m_type: mtype}).done(function (wwww) {
+                                    series.addPoint([wwww.m_timestamp.$date, wwww.m_value], true, state);
                                 });
 
                             }, 10000);

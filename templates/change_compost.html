@@ -39,8 +39,11 @@
                     <label for="area">Area:</label>
                     <input type="text" class="form-control" id="area" value="{{ device.area }}" name="area">
                     <br>
-                    <label for="ip">IP Address:</label>
-                    <input type="text" class="form-control" id="ip" value="{{ device.ip }}" name="ip">
+                    <label for="rip">Raspberry IP Address:</label>
+                    <input type="text" class="form-control" id="rip" value="{{ device.raspberry_ip }}" name="rip">
+                    <br>
+                    <label for="aip">Arduino IP Address:</label>
+                    <input type="text" class="form-control" id="aip" value="{{ device.arduino_ip }}" name="aip">
                     <br>
 
                     <button class="btn btn-primary" type="submit" id="save_btn">Save All</button>
@@ -110,6 +113,14 @@
                                     class="btn {% if flags.Emergency_Stop %}btn-success{% else %}btn-danger{% endif %}"
                                     id="Emergency_Stop" disabled>{% if flags.Emergency_Stop %}ON{% else %}
                                 OFF{% endif %}</button>
+{#                            <br>#}
+                            {#                            <br>#}
+                            {#                            <label for="test">Test:</label>#}
+                            {#                            <br>#}
+                            {#                            <button type="button"#}
+                            {#                                    class="btn {% if flags.Emergency_Stop %}btn-success{% else %}btn-danger{% endif %}"#}
+                            {#                                    id="test">{% if flags.Emergency_Stop %}ON{% else %}#}
+                            {#                                OFF{% endif %}</button>#}
                         </div>
 
                     </div>
@@ -126,29 +137,42 @@
     <script type="text/javascript">
         {#        $("#Motor_F").click(toggle_buttons("{{ device.id }}", "#Motor_F"));#}
         $("#Motor_F").click(function () {
-            toggle_buttons("{{ device.id }}", "#Motor_F");
+            toggle_buttons("#Motor_F");
+            location.reload();
         });
         $("#Motor_B").click(function () {
-            toggle_buttons("{{ device.id }}", "#Motor_B");
+            toggle_buttons("#Motor_B");
+            location.reload();
         });
         $("#Motor_R").click(function () {
-            toggle_buttons("{{ device.id }}", "#Motor_R");
+            toggle_buttons("#Motor_R");
+            location.reload();
         });
         $("#Motor_L").click(function () {
-            toggle_buttons("{{ device.id }}", "#Motor_L");
+            toggle_buttons("#Motor_L");
+            location.reload();
         });
         $("#Fan").click(function () {
-            toggle_buttons("{{ device.id }}", "#Fan");
+            toggle_buttons("#Fan");
+            location.reload();
         });
         $("#Vent").click(function () {
-            toggle_buttons("{{ device.id }}", "#Vent");
+            toggle_buttons("#Vent");
+            location.reload();
         });
         $("#Door_1").click(function () {
-            toggle_buttons("{{ device.id }}", "#Door_1");
+            toggle_buttons("#Door_1");
+            location.reload();
         });
         $("#Emergency_Stop").click(function () {
-            toggle_buttons("{{ device.id }}", "#Emergency_Stop");
+            toggle_buttons("#Emergency_Stop");
+            location.reload();
         });
+{#        $('#test').click(function () {#}
+{#            $.post('/test/controls', {control: "#Door_1", state: 'ON'}).success(function () {#}
+{#                location.reload();#}
+{#            });#}
+{#        });#}
 
 
     </script>

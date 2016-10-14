@@ -18,7 +18,8 @@ class compost_devices(db.Document):
     country = db.StringField(max_length=50)
     region = db.StringField(max_length=50)
     area = db.StringField(max_length=50)
-    ip = db.StringField(max_length=100)
+    raspberry_ip = db.StringField(max_length=100)
+    arduino_ip = db.StringField(max_length=100)
 
 
 class Log(db.Document):
@@ -64,7 +65,7 @@ class compost_Flags(db.Document):
     compost = db.ReferenceField(compost_devices, required=True)
 
     def __str__(self):
-        return self.name
+        return self.Motor_F
 
 
 class measurements(db.Document):
@@ -75,4 +76,4 @@ class measurements(db.Document):
     meta = {'max_documents': 5000}
 
     def __str__(self):
-        return self.name
+        return self.m_type
