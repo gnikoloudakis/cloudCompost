@@ -63,21 +63,23 @@ air_humidity_out = Stats
 def init():
     global ser
     global compost_ID
-    ser = serial.Serial(models.compost_Settings.objects.first().usb_port, 115200)
-    ser.write('/variables\r'.encode())
-    dataDict = read_serial()
-    print(dataDict)
-    compost_ID = models.compost_devices.objects(name=dataDict['name']).first().id
+    global usb_port
+    usb_port = models.compost_Settings.objects.first().usb_port
+    compost_ID = ''
+    ser = serial.Serial('COM10', 115200, timeout=1)
+    ser.write('/id\r'.encode())
+    a = ser.readline()
+    print(a)
 
 
-def read_serial():
-    try:
-        time.sleep(1)
-        # return json.loads(ser.readline())
-        pass
-    except serial.SerialTimeoutException:
-        models.Errors(e_timestamp=datetime.now(), error='Cannot Read Data from Serial Interface',
-                      compost=models.compost_devices.objects(name='Compost_Ilioupoli').first().id).save()
+# def read_serial():
+#     try:
+#         time.sleep(1)
+#         return json.loads(ser.readline())
+#         # pass
+#     except serial.SerialTimeoutException:
+#         models.Errors(e_timestamp=datetime.now(), error='Cannot Read Data from Serial Interface',
+#                       compost=models.compost_devices.objects(name='Compost_Ilioupoli').first().id).save()
 
 
 def read_variables():
@@ -557,6 +559,7 @@ def update_controls():
 
 if __name__ == '__main__':
     init()
+
     # sched.start()
     # sched2.start()
     # sched3.start()
