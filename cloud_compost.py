@@ -129,15 +129,16 @@ class measurements(db.Document):
 
 
 def init():
-    r = requests.get('http://10.0.3.62:8888/variables')
-
-    if r:
+    try:
+        r = requests.get('http://10.0.3.62:8888/variables')
         global compost_ID
         data = json.loads(r.content)
         compost_ID = compost_devices.objects(name=data['name']).first().id
         # print(compost_ID)
-    else:
-        compost_ID = '57f76498e609a8231844226c'
+    except requests.exceptions.ConnectionError:
+        print("http error cannot connect to arduino")
+        Errors(e_timestamp=datetime.now(), error='FAILED to connect to Arduino', compost=compost_ID).save()
+        compost_ID = compost_devices.objects(name='Compost_Ilioupoli').first().id
 
 
 def read_variables():
@@ -707,4 +708,4 @@ if __name__ == '__main__':
     # sched3.start()
     # sched4.start()
 
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, threaded=True)
