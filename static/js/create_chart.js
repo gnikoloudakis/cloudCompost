@@ -190,6 +190,7 @@ function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, d
                     type: type,
                     animation: Highcharts.svg, // don't animate in old IE
                     marginRight: 10,
+                    zoomType: 'x',
                     events: {
                         load: function () {
                             // set up the updating of the chart each second

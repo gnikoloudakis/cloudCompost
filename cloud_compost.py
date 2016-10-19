@@ -130,22 +130,28 @@ class measurements(db.Document):
 
 def init():
     try:
-        r = requests.get('http://10.0.3.62:8888/variables')
+        global arduino_ip
+        arduino_ip = compost_devices.objects.first().arduino_ip
+        r = requests.get('http://' + arduino_ip + ':8888/variables')
         global compost_ID
         data = json.loads(r.content)
         compost_ID = compost_devices.objects(name=data['name']).first().id
         # print(compost_ID)
     except requests.exceptions.ConnectionError:
         print("http error cannot connect to arduino")
-        Errors(e_timestamp=datetime.now(), error='FAILED to connect to Arduino', compost=compost_ID).save()
         compost_ID = compost_devices.objects(name='Compost_Ilioupoli').first().id
+        arduino_ip = '10.0.3.62'
+        Errors(e_timestamp=datetime.now(), error='FAILED to connect to Arduino', compost=compost_ID).save()
 
 
 def read_variables():
-    r = requests.get('http://10.0.3.62:8888/variables')
-    data = json.loads(r.content)
-    update_variables(data)
-    Log(l_timestamp=datetime.now(), action='Read Variables', compost=compost_ID)
+    try:
+        r = requests.get('http://' + arduino_ip + ':8888/variables')
+        data = json.loads(r.content)
+        update_variables(data)
+        Log(l_timestamp=datetime.now(), action='Read Variables', compost=compost_ID)
+    except requests.exceptions.ConnectionError:
+        Errors(e_timestamp=datetime.now(), error='FAILED to read variables from Arduino', compost=compost_ID).save()
 
 
 def update_variables(dataDict):
@@ -207,7 +213,7 @@ def update_variables(dataDict):
         print(aho)
     else:
         pass
-
+    evaluate_variables(si, so, st, sh, ati, ahi, ato, aho)
     compost_Flags.objects(compost=compost_ID).first().update(set__Motor_F=bool(dataDict['variables']['Motor_F']),
                                                              set__Motor_B=bool(dataDict['variables']['Motor_B']),
                                                              set__Motor_R=bool(dataDict['variables']['Motor_R']),
@@ -224,147 +230,248 @@ def update_variables(dataDict):
 def start_motor_forward():
     # ser.write('/stirForwardOn\r'.encode())  # Stir Forward
     # ser.write('/variables\r'.encode())
-    requests.get('http://10.0.3.62:8888/stirForwardOn')
-    sched2.add_job(read_variables)
-    if compost_Flags.objects(compost=compost_ID).first().Motor_F:
-        Log(l_timestamp=datetime.now(), action='Motor Forward Started', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirForwardOn')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirForwardOn',
+                   compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if compost_Flags.objects(compost=compost_ID).first().Motor_F:
+            Log(l_timestamp=datetime.now(), action='Motor Forward Started', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Start', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Start', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOn',
+               compost=compost_ID).save()
 
 
 def stop_motor_forward():
     # ser.write('/stirForwardOff\r'.encode())  # Stir Forward Off
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirForwardOff')
-    sched2.add_job(read_variables)
-    if not compost_Flags.objects(compost=compost_ID).first().Motor_F:
-        Log(l_timestamp=datetime.now(), action='Motor Forward Stopped', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirForwardOff')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirForwardOff',
+                   compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_F:
+            Log(l_timestamp=datetime.now(), action='Motor Forward Stopped', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Stop', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Stop', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOff',
+               compost=compost_ID).save()
 
 
 def start_motor_backward():
     # ser.write('/stirBackwardOn\r'.encode())  # Stir Forward
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirBackwardOn')
-    sched2.add_job(read_variables)
-    if compost_Flags.objects(compost=compost_ID).first().Motor_B:
-        Log(l_timestamp=datetime.now(), action='Motor Backward Started', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirBackwardOn')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirBackwardOn',
+                   compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if compost_Flags.objects(compost=compost_ID).first().Motor_B:
+            Log(l_timestamp=datetime.now(), action='Motor Backward Started', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Start', compost=compost_ID).save()
+            # time.sleep(int(compost_Settings.objects.first().motor_B_duration))
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Start', compost=compost_ID).save()
-        # time.sleep(int(compost_Settings.objects.first().motor_B_duration))
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOn',
+               compost=compost_ID).save()
 
 
 def stop_motor_backward():
     # ser.write('/stirBackwardOff\r'.encode())  # Stir Forward Off
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirBackwardOff')
-    sched2.add_job(read_variables)
-    if not compost_Flags.objects(compost=compost_ID).first().Motor_B:
-        Log(l_timestamp=datetime.now(), action='Motor Backward Stopped', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirBackwardOff')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirBackwardOff',
+                   compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_B:
+            Log(l_timestamp=datetime.now(), action='Motor Backward Stopped', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Stop', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Stop', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOff',
+               compost=compost_ID).save()
 
 
 def start_motor_right():
     # ser.write('/stirRightOn\r'.encode())  # Stir Right
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirRightOn')
-    sched2.add_job(read_variables)
-    if compost_Flags.objects(compost=compost_ID).first().Motor_R:
-        Log(l_timestamp=datetime.now(), action='Motor Right Started', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirRightOn')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirRightOn', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if compost_Flags.objects(compost=compost_ID).first().Motor_R:
+            Log(l_timestamp=datetime.now(), action='Motor Right Started', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Start', compost=compost_ID).save()
+            # time.sleep(int(compost_Settings.objects.first().motor_R_duration))
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Start', compost=compost_ID).save()
-        # time.sleep(int(compost_Settings.objects.first().motor_R_duration))
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOn',
+               compost=compost_ID).save()
 
 
 def stop_motor_right():
     # ser.write('/stirRightOff\r'.encode())  # Stir Right Off
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirRightOff')
-    sched2.add_job(read_variables)
-    if not compost_Flags.objects(compost=compost_ID).first().Motor_R:
-        Log(l_timestamp=datetime.now(), action='Motor Right Stopped', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirRightOff')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirRightOff',
+                   compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_R:
+            Log(l_timestamp=datetime.now(), action='Motor Right Stopped', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Stop', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Stop', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOff',
+               compost=compost_ID).save()
 
 
 def start_motor_left():
     # ser.write('/stirLeftOn\r'.encode())  # Stir Left
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirLeftOn')
-    sched2.add_job(read_variables)
-    if compost_Flags.objects(compost=compost_ID).first().Motor_L:
-        Log(l_timestamp=datetime.now(), action='Motor Left Started', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirLeftOn')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirLeftOn', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if compost_Flags.objects(compost=compost_ID).first().Motor_L:
+            Log(l_timestamp=datetime.now(), action='Motor Left Started', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Left Failed to Start', compost=compost_ID).save()
+            # time.sleep(int(compost_Settings.objects.first().motor_L_duration))
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Left Failed to Start', compost=compost_ID).save()
-        # time.sleep(int(compost_Settings.objects.first().motor_L_duration))
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOn',
+               compost=compost_ID).save()
 
 
 def stop_motor_left():
     # ser.write('/stirLeftOff\r'.encode())  # Stir Left Off
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stirLeftOff')
-    sched2.add_job(read_variables)
-    if not compost_Flags.objects(compost=compost_ID).first().Motor_L:
-        Log(l_timestamp=datetime.now(), action='Motor Left Stopped', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirLeftOff')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirLeftOff', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_L:
+            Log(l_timestamp=datetime.now(), action='Motor Left Stopped', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Motor Left FAILED to Stop', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Motor Left FAILED to Stop', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOff',
+               compost=compost_ID).save()
 
 
 def startFan():
     # ser.write('/startFan\r'.encode())
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/startFan')
-    sched2.add_job(read_variables)
-    if compost_Flags.objects(compost=compost_ID).first().Fan:
-        Log(l_timestamp=datetime.now(), action='Roof Fan Started', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/startFan')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino startFan', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if compost_Flags.objects(compost=compost_ID).first().Fan:
+            Log(l_timestamp=datetime.now(), action='Roof Fan Started', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Start', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Start', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startFan',
+               compost=compost_ID).save()
 
 
 def stopFan():
     # ser.write('/stopFan\r'.encode())
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stopFan')
-    sched2.add_job(read_variables)
-    if not compost_Flags.objects(compost=compost_ID).first().Fan:
-        Log(l_timestamp=datetime.now(), action='Roof Fan Stopped', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stopFan')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopFan', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if not compost_Flags.objects(compost=compost_ID).first().Fan:
+            Log(l_timestamp=datetime.now(), action='Roof Fan Stopped', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Stop', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Stop', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopFan',
+               compost=compost_ID).save()
 
 
 def startVent():
     # ser.write('/startVent\r'.encode())
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/startVent')
-    sched2.add_job(read_variables)
-    if compost_Flags.objects(compost=compost_ID).first().Vent:
-        Log(l_timestamp=datetime.now(), action='Ventilation Started', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop and not compost_Flags.objects.first().Fan:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/startVent')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino startVent', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if compost_Flags.objects(compost=compost_ID).first().Vent:
+            Log(l_timestamp=datetime.now(), action='Ventilation Started', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Start', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Start', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startVent',
+               compost=compost_ID).save()
 
 
 def stopVent():
     # ser.write('/stopVent\r'.encode())
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    requests.get('http://10.0.3.62:8888/stopVent')
-    sched2.add_job(read_variables)
-    if not compost_Flags.objects(compost=compost_ID).first().Vent:
-        Log(l_timestamp=datetime.now(), action='Ventilation Stopped', compost=compost_ID).save()
+    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stopVent')
+        except requests.exceptions.ConnectionError:
+            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopVent', compost=compost_ID).save()
+        sched2.add_job(read_variables)
+        if not compost_Flags.objects(compost=compost_ID).first().Vent:
+            Log(l_timestamp=datetime.now(), action='Ventilation Stopped', compost=compost_ID).save()
+        else:
+            Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
     else:
-        Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
+        Errors(e_timestamp=datetime.now(),
+               error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopVent',
+               compost=compost_ID).save()
 
 
 def add_measurement():
@@ -390,6 +497,18 @@ def add_measurement():
 
 ############################ ALGORITHM FUNCTIONS #########################################################
 
+def evaluate_variables(si, so, st, sh, ati, ahi, ato, aho):
+    if sh:
+        if sh > 60:
+            soil_homogenization()
+    if ahi:
+        if ahi > 85:
+            startVent()
+            time.sleep(10)
+            while measurements.objects(m_type='air_hum_in').order_by('-m_timestamp').first().m_value > 85:
+                time.sleep(10)
+            stopVent()
+
 
 def hourly_ventilation():
     startVent()
@@ -405,11 +524,11 @@ def bring_soil_backward():
 
 def soil_homogenization():
     start_motor_right()
-    time.sleep(time.sleep(int(compost_Settings.objects.first().motor_R_duration)))
+    time.sleep(int(compost_Settings.objects.first().motor_R_duration))
     stop_motor_right()
     time.sleep(5)  ####  Adraneia mhxanhs
     start_motor_left()
-    time.sleep(time.sleep(int(compost_Settings.objects.first().motor_L_duration)))
+    time.sleep(int(compost_Settings.objects.first().motor_L_duration))
 
 
 ###################################################################################################################
@@ -653,58 +772,109 @@ def measure():
 
 @app.route('/compost_controls', methods=['POST'])
 def update_controls():
-    # compost = compost_Flags.objects(compost=request.form['compost_id']).first()
-    if request.form['control'] == '#Motor_F':
+    print(request.form['control'])
+    if request.form['control'] == "#Motor_F":
         if request.form['state'] == 'ON':
-            sched2.add_job(start_motor_forward)
-            # compost.update(set__Motor_F=True)
+            print('mfon')
+            sched2.add_job(start_motor_forward())
         else:
-            sched2.add_job(stop_motor_forward)
-            # compost.update(set__Motor_F=False)
-    elif request.form['control'] == '#Motor_B':
+            sched2.add_job(stop_motor_forward())
+            print('mfoff')
+    elif request.form['control'] == "#Motor_B":
         if request.form['state'] == 'ON':
-            sched2.add_job(start_motor_backward)
-            # compost.update(set__Motor_B=True)
+            print('mbon')
+            sched2.add_job(start_motor_backward())
         else:
-            sched2.add_job(stop_motor_backward)
-            # compost.update(set__Motor_B=False)
-    if request.form['control'] == '#Motor_R':
+            print('mboff')
+            sched2.add_job(stop_motor_backward())
+    elif request.form['control'] == "#Motor_R":
         if request.form['state'] == 'ON':
-            sched2.add_job(start_motor_right)
-            # compost.update(set__Motor_R=True)
+            print('mron')
+            sched2.add_job(start_motor_right())
         else:
-            sched2.add_job(stop_motor_right)
-            # compost.update(set__Motor_R=False)
-    elif request.form['control'] == '#Motor_L':
+            print('mroff')
+            sched2.add_job(stop_motor_right())
+    elif request.form['control'] == "#Motor_L":
         if request.form['state'] == 'ON':
-            sched2.add_job(start_motor_left)
-            # compost.update(set__Motor_L=True)
+            print('mlon')
+            sched2.add_job(start_motor_left())
         else:
-            sched2.add_job(stop_motor_left)
-            # compost.update(set__Motor_L=False)
-    elif request.form['control'] == '#Fan':
+            print('mloff')
+            sched2.add_job(stop_motor_left())
+    elif request.form['control'] == "#Vent":
         if request.form['state'] == 'ON':
-            sched2.add_job(startFan)
-            # compost.update(set__Fan=True)
+            print('venton')
+            sched2.add_job(startVent())
         else:
-            sched2.add_job(stopFan)
-            # compost.update(set__Fan=False)
-    elif request.form['control'] == '#Vent':
+            print('ventoff')
+            sched2.add_job(stopVent())
+    elif request.form['control'] == "#Fan":
         if request.form['state'] == 'ON':
-            sched2.add_job(startVent)
-            # compost.update(set__Vent=True)
+            print('fanon')
+            sched2.add_job(startFan())
         else:
-            sched2.add_job(stopVent)
-            # compost.update(set__Vent=False)
-    # return request.form['control']
+            print('fanoff')
+            sched2.add_job(stopFan())
+    elif request.form['control'] == "#Emergency_Stop":
+        compost = compost_Flags.objects(compost=request.form['id']).first()
+        if request.form['state'] == 'ON':
+            print('esbon')
+            compost.update(set__Emergency_Stop=True)
+        else:
+            print('esboff')
+            compost.update(set__Emergency_Stop=False)
     return 'ok'
 
 
+@app.route('/test', methods=['GET'])
+def test():
+    atest = request.args.get('test')
+    if atest == 'sh':
+        print(1)
+        soil_homogenization()
+    if atest == 'mr1':
+        print(2)
+        start_motor_right()
+    if atest == 'mr0':
+        print(3)
+        stop_motor_right()
+    if atest == 'ml1':
+        print(4)
+        start_motor_left()
+    if atest == 'ml0':
+        print(5)
+        stop_motor_left()
+    if atest == 'v1':
+        print(6)
+        startVent()
+    if atest == 'v0':
+        print(7)
+        stopVent()
+    if atest == 'f1':
+        print(8)
+        startFan()
+    if atest == 'f0':
+        print(9)
+        stopFan()
+    if atest == 'mf1':
+        print(10)
+        start_motor_forward()
+    if atest == 'mf0':
+        print(11)
+        stop_motor_forward()
+    if atest == 'mb1':
+        print(12)
+        start_motor_backward()
+    if atest == 'mb0':
+        print(13)
+        stop_motor_backward()
+
+
 if __name__ == '__main__':
-    init()
-    setupSchedulers()
-    sched.start()
-    sched2.start()
+    # init()
+    # setupSchedulers()
+    # sched.start()
+    # sched2.start()
     # sched3.start()
     # sched4.start()
 

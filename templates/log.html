@@ -30,7 +30,11 @@
                 <th>Compost</th>
             </tr>
             {% for i in  log %}
+                {% set rowloop = loop %}
                 <tr>
+                    <td>
+                        {{ loop.index }})
+                    </td>
                     <td>
                         {{ i.l_timestamp }}
                     </td>
