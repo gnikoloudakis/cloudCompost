@@ -8,18 +8,18 @@ function toggle_buttons(container, compost_id) {
         $(container).removeClass('btn-success');
         $(container).addClass('btn-danger');
         $(container).html('OFF');
-        //update_button(compost_id, container, 'OFF');
         $.post('/compost_controls', {id: compost_id, control: container, state: 'OFF'}).success(function () {
                 location.reload();
+                //location.href = "/change_compost/Compost_Ilioupoli"
             });
         //console.log(container);
     } else {
         $(container).removeClass('btn-danger');
         $(container).addClass('btn-success');
         $(container).html('ON');
-        //update_button(container, 'ON');
         $.post('/compost_controls', {id: compost_id, control: container, state: 'ON'}).success(function () {
                 location.reload();
+                //location.href = "/change_compost/Compost_Ilioupoli"
             });
     }
 }

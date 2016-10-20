@@ -1,12 +1,12 @@
 {% extends 'Layout/IndexLayout.html' %}
 
-{% block pagetitle %}Index {% endblock %}
+{% block pagetitle %}Settings{% endblock %}
 
-{% block sidabartitlelink %}"#"{% endblock %}
-{% block SideBarTitle %}Index{% endblock %}
+{% block sidabartitlelink %}"/settings"{% endblock %}
+{% block SideBarTitle %}Settings{% endblock %}
 
-{% block titlelink %}"#"{% endblock %}
-{% block maintitle %}Index{% endblock %}
+{% block titlelink %}"/settings"{% endblock %}
+{% block maintitle %}Settings{% endblock %}
 
 {% block LOGIN %}
     {#    <li><a href="/login">{{ login }}</a></li>#}
@@ -50,7 +50,7 @@
                     <br>
                     <label for="usb">USB Port:</label>
                     <input type="text" class="form-control" id="usb" value="{{ settings.usb_port }}"
-                           name="usb">
+                           name="usb" disabled>
                     <br>
                     <label for="sleep">Sleep Time for Motors (Seconds):</label>
                     <input type="text" class="form-control" id="sleep" value="{{ settings.sleep_time_for_motors }}"

@@ -166,23 +166,33 @@ function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, d
     var state = false;
     $.post('/preliminary/measurements', {m_type: mtype})
         .done(function (m_data) {
-            for (var i = 0; i < m_data.length; i++) {
-                //console.log(typeof m_data[i].m_value);
-                //console.log(Date(m_data[i].m_timestamp.$date));
-                if (m_data[i].m_value) {
-                    wdata.push({
-                            x: m_data[i].m_timestamp.$date,
-                            y: m_data[i].m_value
-                        }
-                    );
+            if (m_data.length != 0) {
+                for (var i = 0; i < m_data.length; i++) {
+                    //console.log(typeof m_data[i].m_value);
+                    //console.log(Date(m_data[i].m_timestamp.$date));
+                    if (m_data[i].m_value) {
+                        console.log(m_data[i].m_value, m_data[i].m_timestamp.$date);
+                        wdata.push({
+                                x: m_data[i].m_timestamp.$date,
+                                y: m_data[i].m_value
+                            }
+                        );
+                    }
+                    else {
+                        wdata.push({
+                                x: i,
+                                y: i + 0.1
+                            }
+                        );
+                    }
                 }
-                else {
-                    wdata.push({
-                            x: i,
-                            y: i + 0.1
-                        }
-                    );
-                }
+            }
+            else{
+                wdata.push({
+                                x: 0,
+                                y: 0
+                            }
+                        );
             }
             //console.log(wdata);
             $(container).highcharts({
