@@ -1,0 +1,99 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+{% block pagetitle %}DashBoard{% endblock %}
+
+{% block sidabartitlelink %}"/"{% endblock %}
+{% block SideBarTitle %}DashBoard{% endblock %}
+
+{% block titlelink %}"/"{% endblock %}
+{% block maintitle %}DashBoard{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="/login">{{ login }}</a></li>#}
+{% endblock %}
+
+
+{% block ListItems %}
+    {#    <li><a href="/">Dashboard</a></li>#}
+    {#    <li><a href="/composts">Composts</a></li>#}
+    {#    <li><a href="/settings">Settings</a></li>#}
+    {#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div id="tetete"></div>
+        <div class="col-md-8" style="display:inline-block; margin: 0 auto; position:relative; ">
+            <img id="compostImg" src="/static/images/compostArt.jpg" alt=""
+                 style="padding: 10px; margin: 0px; position:absolute; z-index:1;" class="col-md-11"/>
+            <canvas id="myCanvas" style="padding: 10px; position:relative; z-index:5;"></canvas>
+
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" charset="utf-8">
+
+        window.onload = update();
+        window.onresize = update();
+
+        function update() {
+            var socket = io.connect();
+            var measurements = [];
+            socket.on('dashboard', function (data) {
+                measurements = data;
+
+                var canvas = document.getElementById('myCanvas');
+                var context = canvas.getContext('2d');
+
+                var image = document.getElementById("compostImg");
+                canvas.width = image.width;
+                canvas.height = image.height;
+
+                //Texts/////////////////////////////////////////////////
+                context.font = 'bold 16px Calibri';
+                context.fillStyle = 'orange';
+
+                //Outside Temperature: (x,y)=(842,35)
+                context.fillText(measurements['variables']['air_temp_out'].toString() + ' °C', newX(842), newY(35));
+                //Outside Humidity: (x,y)=(842,95)
+                context.fillText(measurements['variables']['air_hum_out'].toString() + '%', newX(842), newY(95));
+                //Outside Light: (x,y)=(842,155)
+                context.fillText(measurements['variables']['sunlight_out'].toString() + '%', newX(842), newY(155));
+
+                //Cabin Temperature: (x,y)=(342,320)
+                context.fillText(measurements['variables']['air_temp_in'].toString() + ' °C', newX(342), newY(320));
+                //Cabin Humidity: (x,y)=(532,320)
+                context.fillText(measurements['variables']['air_hum_in'].toString() + ' %', newX(532), newY(320));
+
+                //Material Temperature: (x,y)=(270,645)
+                context.fillText(measurements['variables']['soil_temp'].toString() + ' °C', newX(270), newY(645));
+                //Material Humidity: (x,y)=(460,645)
+                context.fillText(measurements['variables']['soil_hum'].toString() + '%', newX(460), newY(645));
+
+
+                context.fillStyle = 'red';
+                //Ventilator: (x,y)=(91,55)
+                context.fillText(!!measurements['variables']['Vent'].toString(), newX(91), newY(55));
+                //Fan: (x,y)=(17,360)
+                context.fillText(!!measurements['variables']['Fan'].toString(), newX(17), newY(360));
+                //Door: (x,y)=(758,265)
+                context.fillText(!!measurements['variables']['Door_1'].toString(), newX(758), newY(265));
+                //Mixers: (x,y)=(757,555)
+                context.fillText(!!measurements['variables']['Motor_F'].toString(), newX(757), newY(555));
+
+                ////////////////////////////////////////////////////////
+
+                function newX(oldX) {
+                    var nX = (oldX * canvas.width) / 950;
+                    return nX;
+                }
+
+                function newY(oldY) {
+                    var nY = (oldY * canvas.height) / 700;
+                    return nY;
+                }
+            });
+        }
+    </script>
+{% endblock %}
