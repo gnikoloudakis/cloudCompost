@@ -77,7 +77,7 @@ class Log(db.Document):
     l_timestamp = db.DateTimeField(default=datetime.now(), format='%d-%m-%Y')
     action = db.StringField()
     compost = db.ReferenceField(compost_devices, required=True)
-    meta = {'max_documents': 50}
+    meta = {'max_documents': 100}
 
 
 class Errors(db.Document):
@@ -145,16 +145,14 @@ def init():
         # print(compost_ID)
         # sched4.add_job(test_sched, 'date', run_date=datetime.today(), args=['tetetetet'])
         # read_variables()
-        readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-                              replace_existing=True)
+        readvariables.add_job(read_variables, 'date', run_date=datetime.now())
         stopAll()
     except requests.exceptions.ConnectionError:
         print("http error cannot connect to arduino")
         compost_ID = compost_devices.objects(name='Compost_Ilioupoli').first().id
         arduino_ip = '10.0.3.62'
         # Errors(e_timestamp=datetime.now(), error='FAILED to connect to Arduino', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to connect to Arduino'],
-                       id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to connect to Arduino'])
 
 
 def read_flags():
@@ -163,12 +161,11 @@ def read_flags():
         data = json.loads(r.content)
         update_flags(data)
         # Log(l_timestamp=datetime.now(), action='Read Variables', compost=compost_ID)
-        # sched4.add_job(log_stuff, 'date', run_date=datetime.today(), args=['Read Variables'], id='log_stuff',
+        # sched4.add_job(log_stuff, 'date', run_date=datetime.today(), args=['Read Variables'],
         #                replace_existing=True)
     except requests.exceptions.ConnectionError:
         # Errors(e_timestamp=datetime.now(), error='FAILED to read variables from Arduino', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to read FLAGS from Arduino'],
-                       id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to read FLAGS from Arduino'])
 
 
 def update_flags(dataDict):
@@ -192,12 +189,11 @@ def read_variables():
         data = json.loads(r.content)
         update_variables(data)
         # Log(l_timestamp=datetime.now(), action='Read Variables', compost=compost_ID)
-        # sched4.add_job(log_stuff, 'date', run_date=datetime.today(), args=['Read Variables'], id='log_stuff',
+        # sched4.add_job(log_stuff, 'date', run_date=datetime.today(), args=['Read Variables'],
         #                replace_existing=True)
     except requests.exceptions.ConnectionError:
         # Errors(e_timestamp=datetime.now(), error='FAILED to read variables from Arduino', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to read variables from Arduino'],
-                       id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to read variables from Arduino'])
 
 
 def update_variables(dataDict):
@@ -288,31 +284,31 @@ def update_variables(dataDict):
 def start_motor_forward():
     # ser.write('/stirForwardOn\r'.encode())  # Stir Forward
     # ser.write('/variables\r'.encode())
-    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-        try:
-            requests.get('http://' + arduino_ip + ':8888/stirForwardOn')
-        except requests.exceptions.ConnectionError:
-            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirForwardOn',
-                   compost=compost_ID).save()
-        # sched2.add_job(read_variables, 'date', run_date=datetime.today(), id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-        read_flags()
-        if compost_Flags.objects(compost=compost_ID).first().Motor_F:
-            # Log(l_timestamp=datetime.now(), action='Motor Forward Started', compost=compost_ID).save()
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Forward Started'], id='log_stuff',
-                           replace_existing=True)
+    if compost_Flags.objects(compost=compost_ID).first().Motor_F:
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Forward is already ON'])
+        if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
+            try:
+                requests.get('http://' + arduino_ip + ':8888/stirForwardOn')
+            except requests.exceptions.ConnectionError:
+                # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirForwardOn',
+                #        compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Failed to post to Arduino stirForwardOn'])
+            # sched2.add_job(read_variables, 'date', run_date=datetime.today(), id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+            read_flags()
+            if compost_Flags.objects(compost=compost_ID).first().Motor_F:
+                # Log(l_timestamp=datetime.now(), action='Motor Forward Started', compost=compost_ID).save()
+                sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Forward Started'])
+            else:
+                # Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Start', compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Forward FAILED to Start'])
         else:
-            # Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Start', compost=compost_ID).save()
-            sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Forward FAILED to Start'],
-                           id='error_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(),
-        #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOn',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOn'],
-                       id='error_stuff', replace_existing=True)
+            # Errors(e_timestamp=datetime.now(),
+            #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOn',
+            #        compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOn'])
 
 
 def stop_motor_forward():
@@ -320,67 +316,67 @@ def stop_motor_forward():
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
     # if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-    try:
-        requests.get('http://' + arduino_ip + ':8888/stirForwardOff')
-    except requests.exceptions.ConnectionError:
-        # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirForwardOff',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino stirForwardOff'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-    read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Motor_F:
-        # Log(l_timestamp=datetime.now(), action='Motor Forward Stopped', compost=compost_ID).save()
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Forward Stopped'], id='log_stuff',
-                       replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Stop', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Motor Forward FAILED to Stop'], id='error_stuff', replace_existing=True)
-        # else:
-        #     # Errors(e_timestamp=datetime.now(),
-        #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOff',
-        #     #        compost=compost_ID).save()
-        #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
-        #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOff'],
-        #                    id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Forward is already OFF'])
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirForwardOff')
+        except requests.exceptions.ConnectionError:
+            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirForwardOff',
+            #        compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Failed to post to Arduino stirForwardOff'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+        read_flags()
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_F:
+            # Log(l_timestamp=datetime.now(), action='Motor Forward Stopped', compost=compost_ID).save()
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Forward Stopped'])
+        else:
+            # Errors(e_timestamp=datetime.now(), error='Motor Forward FAILED to Stop', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Motor Forward FAILED to Stop'])
+            # else:
+            #     # Errors(e_timestamp=datetime.now(),
+            #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOff',
+            #     #        compost=compost_ID).save()
+            #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
+            #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirForwardOff'],
+            #                    id='error_stuff')
 
 
 def start_motor_backward():
     # ser.write('/stirBackwardOn\r'.encode())  # Stir Forward
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-        try:
-            requests.get('http://' + arduino_ip + ':8888/stirBackwardOn')
-        except requests.exceptions.ConnectionError:
-            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirBackwardOn',
+    if compost_Flags.objects(compost=compost_ID).first().Motor_B:
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Backwards is already ON'])
+        if not compost_Flags.objects(compost=compost_ID).first().Door_1 and not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop:
+            try:
+                requests.get('http://' + arduino_ip + ':8888/stirBackwardOn')
+            except requests.exceptions.ConnectionError:
+                # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirBackwardOn',
+                #        compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Failed to post to Arduino stirBackwardOn'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+            read_flags()
+            if compost_Flags.objects(compost=compost_ID).first().Motor_B:
+                # sched3.add_job(log_stuff, args=['Motor Backward Started'])
+                # sched4.add_job(test_sched, None, args=['test'])
+                sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Backward Started'])
+            else:
+                # Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Start', compost=compost_ID).save()
+                # time.sleep(int(compost_Settings.objects.first().motor_B_duration))
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Motor Backward FAILED to Start'])
+        else:
+            # Errors(e_timestamp=datetime.now(),
+            #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOn',
             #        compost=compost_ID).save()
             sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Failed to post to Arduino stirBackwardOn'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-        read_flags()
-        if compost_Flags.objects(compost=compost_ID).first().Motor_B:
-            # sched3.add_job(log_stuff, args=['Motor Backward Started'])
-            # sched4.add_job(test_sched, None, args=['test'])
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Backward Started'],
-                           id='log_stuff', replace_existing=True)
-        else:
-            # Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Start', compost=compost_ID).save()
-            # time.sleep(int(compost_Settings.objects.first().motor_B_duration))
-            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Motor Backward FAILED to Start'], id='error_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(),
-        #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOn',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOn'],
-                       id='error_stuff', replace_existing=True)
+                           args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOn'])
 
 
 def stop_motor_backward():
@@ -388,65 +384,66 @@ def stop_motor_backward():
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
     # if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-    try:
-        requests.get('http://' + arduino_ip + ':8888/stirBackwardOff')
-    except requests.exceptions.ConnectionError:
-        # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirBackwardOff',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino stirBackwardOff'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-    read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Motor_B:
-        # sched3.add_job(log_stuff, args=['Motor Backward Stopped'])
-        # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Backward Stopped'],
-                       id='log_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Stop', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Motor Backward FAILED to Stop'], id='error_stuff', replace_existing=True)
-        # else:
-        #     # Errors(e_timestamp=datetime.now(),
-        #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOff',
-        #     #        compost=compost_ID).save()
-        #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
-        #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOff'],
-        #                    id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Backwards is already OFF'])
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirBackwardOff')
+        except requests.exceptions.ConnectionError:
+            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirBackwardOff',
+            #        compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Failed to post to Arduino stirBackwardOff'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+        read_flags()
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_B:
+            # sched3.add_job(log_stuff, args=['Motor Backward Stopped'])
+            # sched4.add_job(test_sched, None, args=['test'])
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Backward Stopped'])
+        else:
+            # Errors(e_timestamp=datetime.now(), error='Motor Backward FAILED to Stop', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Motor Backward FAILED to Stop'])
+            # else:
+            #     # Errors(e_timestamp=datetime.now(),
+            #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOff',
+            #     #        compost=compost_ID).save()
+            #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
+            #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirBackwardOff'],
+            #                    id='error_stuff')
 
 
 def start_motor_right():
     # ser.write('/stirRightOn\r'.encode())  # Stir Right
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-        try:
-            requests.get('http://' + arduino_ip + ':8888/stirRightOn')
-        except requests.exceptions.ConnectionError:
-            Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirRightOn', compost=compost_ID).save()
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-        read_flags()
-        if compost_Flags.objects(compost=compost_ID).first().Motor_R:
-            # sched3.add_job(log_stuff, args=['Motor Right Started'])
-            # sched4.add_job(test_sched, None, args=['test'])
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Right Started'], id='log_stuff',
-                           replace_existing=True)
+    if compost_Flags.objects(compost=compost_ID).first().Motor_R:
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Right is already ON'])
+        if not compost_Flags.objects(compost=compost_ID).first().Door_1 and not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop:
+            try:
+                requests.get('http://' + arduino_ip + ':8888/stirRightOn')
+            except requests.exceptions.ConnectionError:
+                Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirRightOn', compost=compost_ID).save()
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+            read_flags()
+            if compost_Flags.objects(compost=compost_ID).first().Motor_R:
+                # sched3.add_job(log_stuff, args=['Motor Right Started'])
+                # sched4.add_job(test_sched, None, args=['test'])
+                sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Right Started'])
+            else:
+                # Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Start', compost=compost_ID).save()
+                # time.sleep(int(compost_Settings.objects.first().motor_R_duration))
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Motor Right FAILED to Start'])
         else:
-            # Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Start', compost=compost_ID).save()
-            # time.sleep(int(compost_Settings.objects.first().motor_R_duration))
+            # Errors(e_timestamp=datetime.now(),
+            #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOn',
+            #        compost=compost_ID).save()
             sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Motor Right FAILED to Start'], id='error_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(),
-        #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOn',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOn'],
-                       id='error_stuff', replace_existing=True)
+                           args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOn'])
 
 
 def stop_motor_right():
@@ -454,67 +451,68 @@ def stop_motor_right():
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
     # if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-    try:
-        requests.get('http://' + arduino_ip + ':8888/stirRightOff')
-    except requests.exceptions.ConnectionError:
-        # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirRightOff',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino stirRightOff'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-    read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Motor_R:
-        # sched3.add_job(log_stuff, args=['Motor Right Stopped'])
-        # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Right Stopped'], id='log_stuff',
-                       replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Stop', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Motor Right FAILED to Stop'], id='error_stuff', replace_existing=True)
-        # else:
-        #     # Errors(e_timestamp=datetime.now(),
-        #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOff',
-        #     #        compost=compost_ID).save()
-        #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
-        #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOff'],
-        #                    id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Right is already OFF'])
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirRightOff')
+        except requests.exceptions.ConnectionError:
+            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirRightOff',
+            #        compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Failed to post to Arduino stirRightOff'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+        read_flags()
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_R:
+            # sched3.add_job(log_stuff, args=['Motor Right Stopped'])
+            # sched4.add_job(test_sched, None, args=['test'])
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Right Stopped'])
+        else:
+            # Errors(e_timestamp=datetime.now(), error='Motor Right FAILED to Stop', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Motor Right FAILED to Stop'])
+            # else:
+            #     # Errors(e_timestamp=datetime.now(),
+            #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOff',
+            #     #        compost=compost_ID).save()
+            #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
+            #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirRightOff'],
+            #                    id='error_stuff')
 
 
 def start_motor_left():
     # ser.write('/stirLeftOn\r'.encode())  # Stir Left
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-        try:
-            requests.get('http://' + arduino_ip + ':8888/stirLeftOn')
-        except requests.exceptions.ConnectionError:
-            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirLeftOn', compost=compost_ID).save()
-            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Failed to post to Arduino stirLeftOn'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-        read_flags()
-        if compost_Flags.objects(compost=compost_ID).first().Motor_L:
-            # sched3.add_job(log_stuff, args=['Motor Right Sarted'])
-            # sched4.add_job(test_sched, None, args=['test'])
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Left Started'], id='log_stuff',
-                           replace_existing=True)
+    if compost_Flags.objects(compost=compost_ID).first().Motor_L:
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Left is already ON'])
+        if not compost_Flags.objects(compost=compost_ID).first().Door_1 and not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop:
+            try:
+                requests.get('http://' + arduino_ip + ':8888/stirLeftOn')
+            except requests.exceptions.ConnectionError:
+                # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirLeftOn', compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Failed to post to Arduino stirLeftOn'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+            read_flags()
+            if compost_Flags.objects(compost=compost_ID).first().Motor_L:
+                # sched3.add_job(log_stuff, args=['Motor Right Sarted'])
+                # sched4.add_job(test_sched, None, args=['test'])
+                sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Left Started'])
+            else:
+                # Errors(e_timestamp=datetime.now(), error='Motor Left Failed to Start', compost=compost_ID).save()
+                # time.sleep(int(compost_Settings.objects.first().motor_L_duration))
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Motor Left Failed to Start'])
         else:
-            # Errors(e_timestamp=datetime.now(), error='Motor Left Failed to Start', compost=compost_ID).save()
-            # time.sleep(int(compost_Settings.objects.first().motor_L_duration))
+            # Errors(e_timestamp=datetime.now(),
+            #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOn',
+            #        compost=compost_ID).save()
             sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Motor Left Failed to Start'], id='error_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(),
-        #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOn',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOn'],
-                       id='error_stuff', replace_existing=True)
+                           args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOn'])
 
 
 def stop_motor_left():
@@ -522,65 +520,67 @@ def stop_motor_left():
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
     # if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-    try:
-        requests.get('http://' + arduino_ip + ':8888/stirLeftOff')
-    except requests.exceptions.ConnectionError:
-        # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirLeftOff', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino stirLeftOff'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-    read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Motor_L:
-        # sched3.add_job(log_stuff, args=['Motor Left Stopped'])
-        # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Left Stopped'], id='log_stuff',
-                       replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(), error='Motor Left FAILED to Stop', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Motor Left FAILED to Stop'], id='error_stuff', replace_existing=True)
-        # else:
-        #     # Errors(e_timestamp=datetime.now(),
-        #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOff',
-        #     #        compost=compost_ID).save()
-        #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
-        #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOff'],
-        #                    id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Motor Left is already OFF'])
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stirLeftOff')
+        except requests.exceptions.ConnectionError:
+            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stirLeftOff', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Failed to post to Arduino stirLeftOff'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+        read_flags()
+        if not compost_Flags.objects(compost=compost_ID).first().Motor_L:
+            # sched3.add_job(log_stuff, args=['Motor Left Stopped'])
+            # sched4.add_job(test_sched, None, args=['test'])
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Motor Left Stopped'])
+        else:
+            # Errors(e_timestamp=datetime.now(), error='Motor Left FAILED to Stop', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Motor Left FAILED to Stop'])
+            # else:
+            #     # Errors(e_timestamp=datetime.now(),
+            #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOff',
+            #     #        compost=compost_ID).save()
+            #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
+            #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stirLeftOff'],
+            #                    id='error_stuff')
 
 
 def startFan():
     # ser.write('/startFan\r'.encode())
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-        try:
-            requests.get('http://' + arduino_ip + ':8888/startFan')
-        except requests.exceptions.ConnectionError:
-            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino startFan', compost=compost_ID).save()
-            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Failed to post to Arduino startFan'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-        read_flags()
-        if compost_Flags.objects(compost=compost_ID).first().Fan:
-            # sched3.add_job(log_stuff, args=['Roof Fan Started'])
-            # sched4.add_job(test_sched, None, args=['test'])
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Roof Fan Started'], id='log_stuff',
-                           replace_existing=True)
+    if compost_Flags.objects(compost=compost_ID).first().Fan:
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Fan is already ON'])
+        if not compost_Flags.objects(compost=compost_ID).first().Door_1 and not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop and not compost_Flags.objects(compost=compost_ID).first().Vent:
+            try:
+                requests.get('http://' + arduino_ip + ':8888/startFan')
+            except requests.exceptions.ConnectionError:
+                # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino startFan', compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Failed to post to Arduino startFan'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+            read_flags()
+            if compost_Flags.objects(compost=compost_ID).first().Fan:
+                # sched3.add_job(log_stuff, args=['Roof Fan Started'])
+                # sched4.add_job(test_sched, None, args=['test'])
+                sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Roof Fan Started'])
+            else:
+                # Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Start', compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Roof Fan FAILED to Start'])
         else:
-            # Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Start', compost=compost_ID).save()
+            # Errors(e_timestamp=datetime.now(),
+            #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startFan',
+            #        compost=compost_ID).save()
             sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Roof Fan FAILED to Start'], id='error_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(),
-        #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startFan',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startFan'],
-                       id='error_stuff', replace_existing=True)
+                           args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startFan'],
+                           id='error_stuff')
 
 
 def stopFan():
@@ -588,66 +588,68 @@ def stopFan():
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
     # if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-    try:
-        requests.get('http://' + arduino_ip + ':8888/stopFan')
-    except requests.exceptions.ConnectionError:
-        # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopFan', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino stopFan'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-    read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Fan:
-        # sched3.add_job(log_stuff, args=['Roof Fan Stopped'])
-        # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Roof Fan Stopped'], id='log_stuff',
-                       replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Stop', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Roof Fan FAILED to Stop'], id='error_stuff', replace_existing=True)
-        # else:
-        #     # Errors(e_timestamp=datetime.now(),
-        #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopFan',
-        #     #        compost=compost_ID).save()
-        #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
-        #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopFan'],
-        #                    id='error_stuff', replace_existing=True)
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Fan is already OFF'])
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stopFan')
+        except requests.exceptions.ConnectionError:
+            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopFan', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Failed to post to Arduino stopFan'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+        read_flags()
+        if not compost_Flags.objects(compost=compost_ID).first().Fan:
+            # sched3.add_job(log_stuff, args=['Roof Fan Stopped'])
+            # sched4.add_job(test_sched, None, args=['test'])
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Roof Fan Stopped'])
+        else:
+            # Errors(e_timestamp=datetime.now(), error='Roof Fan FAILED to Stop', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Roof Fan FAILED to Stop'])
+            # else:
+            #     # Errors(e_timestamp=datetime.now(),
+            #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopFan',
+            #     #        compost=compost_ID).save()
+            #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
+            #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopFan'],
+            #                    id='error_stuff')
 
 
 def startVent():
     # ser.write('/startVent\r'.encode())
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
-    if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop and not compost_Flags.objects.first().Fan:
-        try:
-            requests.get('http://' + arduino_ip + ':8888/startVent')
-        except requests.exceptions.ConnectionError:
-            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino startVent', compost=compost_ID).save()
-            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Failed to post to Arduino startVent'], id='error_stuff', replace_existing=True)
-            # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-        read_flags()
-        if compost_Flags.objects(compost=compost_ID).first().Vent:
-            # sched3.add_job(log_stuff, args=['Ventilation Started'])
-            # sched4.add_job(test_sched, None, args=['test'])
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Ventilation Started'], id='log_stuff',
-                           replace_existing=True)
+    if not compost_Flags.objects(compost=compost_ID).first().Vent:
+        sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Ventilation is Already ON'])
+        if not compost_Flags.objects(compost=compost_ID).first().Door_1 and not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop and not compost_Flags.objects(compost=compost_ID).first().Fan:
+            try:
+                requests.get('http://' + arduino_ip + ':8888/startVent')
+            except requests.exceptions.ConnectionError:
+                # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino startVent', compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Failed to post to Arduino startVent'])
+                # sched2.add_job(read_variables, id='read_variables')
+                # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+            read_flags()
+            if compost_Flags.objects(compost=compost_ID).first().Vent:
+                # sched3.add_job(log_stuff, args=['Ventilation Started'])
+                # sched4.add_job(test_sched, None, args=['test'])
+                sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Ventilation Started'])
+            else:
+                # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Start', compost=compost_ID).save()
+                sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                               args=['Ventilation FAILED to Start'])
         else:
-            # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Start', compost=compost_ID).save()
+            # Errors(e_timestamp=datetime.now(),
+            #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startVent',
+            #        compost=compost_ID).save()
             sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                           args=['Ventilation FAILED to Start'], id='error_stuff', replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(),
-        #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startVent',
-        #        compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=[
-                           'Fan Started OR Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startVent'],
-                       id='error_stuff', replace_existing=True)
+                           args=[
+                               'Fan Started OR Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino startVent'],
+                           id='error_stuff')
 
 
 def stopVent():
@@ -655,32 +657,34 @@ def stopVent():
     # ser.write('/variables\r'.encode())
     # update_variables(ser.readline())
     # if not compost_Flags.objects.first().Door_1 and not compost_Flags.objects.first().Emergency_Stop:
-    try:
-        requests.get('http://' + arduino_ip + ':8888/stopVent')
-    except requests.exceptions.ConnectionError:
-        # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopVent', compost=compost_ID).save()
-        sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino stopVent'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
-        # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
-        #                       replace_existing=True)
-    read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Vent:
-        # sched3.add_job(log_stuff, args=['Ventilation Stopped'])
-        # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Ventilation Stopped'], id='log_stuff',
-                       replace_existing=True)
-    else:
-        # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Ventilation FAILED to Stop'], id='error_stuff', replace_existing=True)
-        # else:
-        #     # Errors(e_timestamp=datetime.now(),
-        #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopVent',
-        #     #        compost=compost_ID).save()
-        #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
-        #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopVent'],
-        #                    id='error_stuff', replace_existing=True)
+                           args=['Ventilation is already OFF'])
+        try:
+            requests.get('http://' + arduino_ip + ':8888/stopVent')
+        except requests.exceptions.ConnectionError:
+            # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopVent', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Failed to post to Arduino stopVent'])
+            # sched2.add_job(read_variables, id='read_variables')
+            # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
+            #                       replace_existing=True)
+        read_flags()
+        if not compost_Flags.objects(compost=compost_ID).first().Vent:
+            # sched3.add_job(log_stuff, args=['Ventilation Stopped'])
+            # sched4.add_job(test_sched, None, args=['test'])
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Ventilation Stopped'])
+        else:
+            # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
+            sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
+                           args=['Ventilation FAILED to Stop'])
+            # else:
+            #     # Errors(e_timestamp=datetime.now(),
+            #     #        error='Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopVent',
+            #     #        compost=compost_ID).save()
+            #     sched4.add_job(error_stuff, 'date', run_date=datetime.today(),
+            #                    args=['Door OPEN OR EMERGENCY BUTTON PRESSED- Failed to post to Arduino stopVent'],
+            #                    id='error_stuff')
 
 
 def Emergency_Stop_ON():
@@ -690,22 +694,21 @@ def Emergency_Stop_ON():
     except requests.exceptions.ConnectionError:
         # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopVent', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino Emergency_Stop_ON'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
+                       args=['Failed to post to Arduino Emergency_Stop_ON'])
+        # sched2.add_job(read_variables, id='read_variables')
         # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
         #                       replace_existing=True)
     read_flags()
     if compost_Flags.objects(compost=compost_ID).first().Emergency_Stop:
         # sched3.add_job(log_stuff, args=['Ventilation Stopped'])
         # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Emergency_Stop PUSHED to ON'],
-                       id='log_stuff', replace_existing=True)
+        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Emergency_Stop PUSHED to ON'])
         stopAll()  ############################### STOP EVERYTHING  #############
 
     else:
         # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Emergency_Stop FAILED to be PUSHED to ON'], id='error_stuff', replace_existing=True)
+                       args=['Emergency_Stop FAILED to be PUSHED to ON'])
 
 
 def Emergency_Stop_OFF():
@@ -715,35 +718,33 @@ def Emergency_Stop_OFF():
     except requests.exceptions.ConnectionError:
         # Errors(e_timestamp=datetime.now(), error='Failed to post to Arduino stopVent', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Failed to post to Arduino Emergency_Stop_ON'], id='error_stuff', replace_existing=True)
-        # sched2.add_job(read_variables, id='read_variables', replace_existing=True)
+                       args=['Failed to post to Arduino Emergency_Stop_ON'])
+        # sched2.add_job(read_variables, id='read_variables')
         # readvariables.add_job(read_variables, 'date', run_date=datetime.now(), id='read_variables',
         #                       replace_existing=True)
     read_flags()
     if not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop:
         # sched3.add_job(log_stuff, args=['Ventilation Stopped'])
         # sched4.add_job(test_sched, None, args=['test'])
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Emergency_Stop PUSHED to OFF'],
-                       id='log_stuff',
-                       replace_existing=True)
+        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Emergency_Stop PUSHED to OFF'])
     else:
         # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['Emergency_Stop FAILED to be PUSHED to OFF'], id='error_stuff', replace_existing=True)
+                       args=['Emergency_Stop FAILED to be PUSHED to OFF'])
 
 
 def stopAll():
-    if compost_Flags.objects.first().Motor_F:
+    # if compost_Flags.objects(compost=compost_ID).first().Motor_F:
         stop_motor_forward()
-    elif compost_Flags.objects.first().Motor_B:
+    # elif compost_Flags.objects(compost=compost_ID).first().Motor_B:
         stop_motor_backward()
-    elif compost_Flags.objects.first().Motor_L:
+    # elif compost_Flags.objects(compost=compost_ID).first().Motor_L:
         stop_motor_left()
-    elif compost_Flags.objects.first().Motor_R:
+    # elif compost_Flags.objects(compost=compost_ID).first().Motor_R:
         stop_motor_right()
-    elif compost_Flags.objects.first().Fan:
+    # elif compost_Flags.objects(compost=compost_ID).first().Fan:
         stopFan()
-    elif compost_Flags.objects.first().Vent:
+    # elif compost_Flags.objects(compost=compost_ID).first().Vent:
         stopVent()
 
 
@@ -774,11 +775,9 @@ def check_air_hum_inside():
     try:
         r = requests.get('http://' + arduino_ip + ':8888/air_hum_in')
         data = json.loads(r.content)
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Read Air Humidity Inside'], id='log_stuff',
-                       replace_existing=True)
+        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Check Air Humidity Inside'])
         if data['air_hum_in'] > float(compost_Settings.objects.first().highest_air_humidity_inside):
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Air Humidity Inside OVER 85% detected'],
-                           id='log_stuff', replace_existing=True)
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Air Humidity Inside OVER 85% detected'])
             startVent()
             time.sleep(10)
             while measurements.objects(m_type='air_hum_in').order_by('-m_timestamp').first().m_value > 85:
@@ -787,33 +786,28 @@ def check_air_hum_inside():
     except requests.exceptions.ConnectionError:
         # Errors(e_timestamp=datetime.now(), error='FAILED to read variables from Arduino', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['FAILED to read Air Humidity Inside from Arduino'],
-                       id='error_stuff', replace_existing=True)
+                       args=['FAILED to read Air Humidity Inside from Arduino'])
 
 
 def check_soil_hum():
     try:
         r = requests.get('http://' + arduino_ip + ':8888/soil_hum')
         data = json.loads(r.content)
-        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Read Soil Humidity'], id='log_stuff',
-                       replace_existing=True)
+        sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Read Soil Humidity'])
         if data['soil_hum'] > float(compost_Settings.objects.first().highest_soil_humidity):
             sched3.add_job(log_stuff, args=['Soil Humidity OVER 60% detected'])
-            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Soil Humidity OVER 60% detected'],
-                           id='log_stuff', replace_existing=True)
+            sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Soil Humidity OVER 60% detected'])
             soil_homogenization()
     except requests.exceptions.ConnectionError:
         # Errors(e_timestamp=datetime.now(), error='FAILED to read variables from Arduino', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(),
-                       args=['FAILED to read Soil Humidity from Arduino'],
-                       id='error_stuff', replace_existing=True)
+                       args=['FAILED to read Soil Humidity from Arduino'])
 
 
 def hourly_ventilation():
     # sched3.add_job(log_stuff, args=['Hourly Ventilation started'])
     # sched4.add_job(test_sched, None, args=['test'])
-    sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Hourly Ventilation started'], id='log_stuff',
-                   replace_existing=True)
+    sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Hourly Ventilation started'])
     startVent()
     time.sleep(int(compost_Settings.objects.first().vent_duration))
     stopVent()
@@ -822,8 +816,8 @@ def hourly_ventilation():
 def bring_soil_backward():
     # sched3.add_job(log_stuff, args=['Bringing Soil Backwards'])
     # sched4.add_job(test_sched, None, args=['test'])
-    sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Bringing Soil Backwards'], id='log_stuff',
-                   replace_existing=True)
+    sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Bringing Soil Backwards']
+                   )
     start_motor_backward()
     time.sleep(int(compost_Settings.objects.first().motor_B_duration))
     stop_motor_backward()
@@ -832,8 +826,7 @@ def bring_soil_backward():
 def soil_homogenization():
     # sched3.add_job(log_stuff, args=['Soil Homogenization started'])
     # sched4.add_job(test_sched, None, args=['test'])
-    sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Soil Homogenization started'], id='log_stuff',
-                   replace_existing=True)
+    sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Soil Homogenization started'])
     startFan()
     start_motor_right()
     time.sleep(int(compost_Settings.objects.first().motor_R_duration))
@@ -847,11 +840,13 @@ def soil_homogenization():
 
 def log_stuff(text):
     Log(l_timestamp=datetime.now(), action=text, compost=compost_ID).save()
+    socketio.emit('log_count', Log.objects.count())
     print('loooogggg')
 
 
 def error_stuff(text):
     Errors(e_timestamp=datetime.now(), error=text, compost=compost_ID).save()
+    socketio.emit('error_count', Errors.objects.count())
     print('errrrroorrrr')
 
 
@@ -862,25 +857,22 @@ def test_sched(text):
 ###################################################################################################################
 ##############  SET SCHEDULERS   ##################################################################################
 def setupSchedulers():
-    readvariables.add_job(read_variables, 'interval', seconds=10, id='read_variables',
-                          replace_existing=True)  #### diavazei metrhseis ka8e 10 seconds
-    sched.add_job(check_air_hum_inside, 'interval', minutes=30, id='check_air_hum_inside',
-                  replace_existing=True)
+    readvariables.add_job(read_variables, 'interval', seconds=10, id='read_variables')  #### diavazei metrhseis ka8e 10 seconds
+    sched.add_job(check_air_hum_inside, 'interval', minutes=30, id='check_air_hum_inside')
 
     sched.add_job(bring_soil_backward, 'cron', day_of_week='mon-fri',
                   hour=datetime.strptime(compost_Settings.objects.first().daily_soil_backward_time, '%I:%M%p').hour,
-                  id='soil_backward', replace_existing=True)
+                  id='soil_backward')
 
     sched.add_job(soil_homogenization, 'cron', day_of_week='mon-fri',
                   hour=datetime.strptime(compost_Settings.objects.first().daily_steering_time, '%I:%M%p').hour,
-                  id='soil_homogenization', replace_existing=True)
+                  id='soil_homogenization')
 
     sched.add_job(check_soil_hum, 'cron', day_of_week='mon-fri',
                   hour=datetime.strptime(compost_Settings.objects.first().daily_steering_time, '%I:%M%p').hour + 1,
-                  id='check_soil_hum', replace_existing=True)
+                  id='check_soil_hum')
 
-    sched.add_job(hourly_ventilation, 'interval', hours=1, id='hourly_ventilation',
-                  replace_existing=True)  ####  ka8e wra eksaerismos gia 5 lepta
+    sched.add_job(hourly_ventilation, 'interval', hours=1, id='hourly_ventilation')  ####  ka8e wra eksaerismos gia 5 lepta
 
     # sched.add_job(add_measurement, 'interval', seconds=10)  ####  dummy metrhseis ka8e 10 seconds
 
@@ -890,23 +882,9 @@ def setupSchedulers():
 
 @app.route('/')
 def index():
-    # try:
-    compost_device = compost_devices.objects.first_or_404()
-    slo = measurements.objects(m_type='sunlight_out').order_by('-m_timestamp').first_or_404()
-    sti = measurements.objects(m_type='soil_temp').order_by('-m_timestamp').first_or_404()
-    shi = measurements.objects(m_type='soil_hum').order_by('-m_timestamp').first_or_404()
-    atii = measurements.objects(m_type='air_temp_in').order_by('-m_timestamp').first_or_404()
-    ahii = measurements.objects(m_type='air_hum_in').order_by('-m_timestamp').first_or_404()
-    atoo = measurements.objects(m_type='air_temp_out').order_by('-m_timestamp').first_or_404()
-    ahoo = measurements.objects(m_type='air_hum_out').order_by('-m_timestamp').first_or_404()
-    flags = compost_Flags.objects(compost=compost_ID).first_or_404()
     eerrors = Errors.objects
     log = Log.objects
-    return render_template('scada.html')
-    # except:
-    #     compost_device = dummy_data
-    #     return render_template('dashboard.html', compost_device=compost_device, eerrors=eerrors, log=log)
-    # return render_template('scada.html', compost_device=compost_device)
+    return render_template('scada2.html', eerrors=eerrors, log=log)
 
 
 @app.route('/<compost_name>')
@@ -1230,6 +1208,8 @@ def test():
     if atest == 'mb0':
         print(13)
         stop_motor_backward()
+    if atest == 'log_test':
+        socketio.emit('log_count', Log.objects.count())
     return 'ok test'
 
 

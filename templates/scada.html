@@ -22,12 +22,10 @@
 
 {% block body %}
     <div class="row">
-        <div id="tetete"></div>
-        <div class="col-md-8" style="display:inline-block; margin: 0 auto; position:relative; ">
+        <div class="col-md-12" style="display:inline-block; margin: 0 auto; position:relative; ">
             <img id="compostImg" src="/static/images/compostArt.jpg" alt=""
                  style="padding: 10px; margin: 0px; position:absolute; z-index:1;" class="col-md-11"/>
             <canvas id="myCanvas" style="padding: 10px; position:relative; z-index:5;"></canvas>
-
         </div>
     </div>
 {% endblock %}
@@ -35,7 +33,7 @@
     <script type="text/javascript" charset="utf-8">
 
         window.onload = update();
-        window.onresize = update();
+        $( window ).resize(function() { update(); });
 
         function update() {
             var socket = io.connect();
@@ -74,13 +72,13 @@
 
                 context.fillStyle = 'red';
                 //Ventilator: (x,y)=(91,55)
-                context.fillText(!!measurements['variables']['Vent'].toString(), newX(91), newY(55));
+                context.fillText(!!parseInt(measurements['variables']['Vent']), newX(91), newY(55));
                 //Fan: (x,y)=(17,360)
-                context.fillText(!!measurements['variables']['Fan'].toString(), newX(17), newY(360));
+                context.fillText(!!parseInt(measurements['variables']['Fan']), newX(17), newY(360));
                 //Door: (x,y)=(758,265)
-                context.fillText(!!measurements['variables']['Door_1'].toString(), newX(758), newY(265));
+                context.fillText(!!parseInt(measurements['variables']['Door_1']), newX(758), newY(265));
                 //Mixers: (x,y)=(757,555)
-                context.fillText(!!measurements['variables']['Motor_F'].toString(), newX(757), newY(555));
+                context.fillText(!!parseInt(measurements['variables']['Motor_F']), newX(757), newY(555));
 
                 ////////////////////////////////////////////////////////
 

@@ -11,6 +11,15 @@
     position: relative
 }
 
+/*.flags:after {*/
+    /*content: attr(data-value);*/
+/*}*/
+/*.flags[data-value="true"]:after{*/
+    /*color: #00bb00;*/
+/*}*/
+/*.flags[data-value="false"]:after{*/
+    /*color: red;*/
+/*}*/
 
 #wrapper {
     padding-left: 0;

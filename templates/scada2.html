@@ -1,0 +1,120 @@
+{% extends 'Layout/IndexLayout.html' %}
+
+{% block pagetitle %}Overview{% endblock %}
+
+{% block sidabartitlelink %}"/Compost_Ilioupoli"{% endblock %}
+{% block SideBarTitle %}Overview{% endblock %}
+
+{% block titlelink %}"/Compost_Ilioupoli"{% endblock %}
+{% block maintitle %}Overview{% endblock %}
+
+{% block LOGIN %}
+    {#    <li><a href="/login">{{ login }}</a></li>#}
+{% endblock %}
+
+
+{% block ListItems %}
+    {#    <li><a href="/">Dashboard</a></li>#}
+    {#    <li><a href="/composts">Composts</a></li>#}
+    {#    <li><a href="/settings">Settings</a></li>#}
+    {#    <li><a href="/init_db">Init DB</a></li>#}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-10" style="display:inline-block; margin: 0 auto; position:relative; ">
+            <img id="compostImg" src="/static/images/compostArt.jpg" class="img-responsive"
+                 alt="Responsive image"/>
+            {#            <canvas id="myCanvas" style="padding: 10px; position:relative; z-index:5;"></canvas>#}
+            <div style="position:absolute; top: 5%; left: 12%;; width:20%; height: 25%;">
+                <div class="flags" id="Vent" style="font-size: large; color:red; font-weight: bold;">Ventilation</div>
+            </div>
+            <div style="position:absolute; top: 49%; left: 4%;; width:20%; height: 25%;">
+                <div id="Fan" style="font-size: large; color: red; font-weight: bold;">Fan</div>
+            </div>
+            <div style="position:absolute; top: 3%; left: 88%;; width:20%; height: 25%;">
+                <div id="Temp" style="font-size: large; color: red; font-weight: bold;">Temperature</div>
+            </div>
+            <div style="position:absolute; top: 11%; left: 88%;; width:20%; height: 25%;">
+                <div id="Hum" style="font-size: large; color: red; font-weight: bold;">Humidity</div>
+            </div>
+            <div style="position:absolute; top: 19%; left: 88%;; width:20%; height: 25%;">
+                <div id="sun" style="font-size: large; color: red; font-weight: bold;">Sunlight</div>
+            </div>
+            <div style="position:absolute; top: 35%; left: 82%;; width:20%; height: 25%;">
+                <div id="door" style="font-size: large; color: red; font-weight: bold;">Door_1</div>
+            </div>
+            <div style="position:absolute; top: 44%; left: 57%;; width:20%; height: 25%;">
+                <div id="hum_in" style="font-size: large; color: red; font-weight: bold;">Humidity Inside</div>
+            </div>
+            <div style="position:absolute; top: 44%; left: 37%;; width:20%; height: 25%;">
+                <div id="temp_in" style="font-size: large; color: red; font-weight: bold;">Temperature Inside</div>
+            </div>
+            <div style="position:absolute; top: 77%; left: 80%;; width:20%; height: 25%;">
+                <div id="motors" style="font-size: large; color: red; font-weight: bold;">Temperature Inside</div>
+            </div>
+            <div style="position:absolute; top: 89.5%; left: 50%;; width:20%; height: 25%;">
+                <div id="soil_hum" style="font-size: large; color: red; font-weight: bold;">Soil Humidity</div>
+            </div>
+            <div style="position:absolute; top: 89.5%; left: 30%;; width:20%; height: 25%;">
+                <div id="soil_temp" style="font-size: large; color: red; font-weight: bold;">Soil Temperature</div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript">
+        var socket = io.connect();
+        socket.on('dashboard', function (data) {
+            $("#Vent").html(function () {
+                if (!!parseInt(data['variables']['Vent'])) {
+                    $("#Vent").css("color", "green");
+                    return "True"
+                }
+                else {
+                    $("#Vent").css("color", "red");
+                    return "False"
+                }
+            });
+            $("#Fan").html(function () {
+                if (!!parseInt(data['variables']['Vent'])) {
+                    $("#Fan").css("color", "green");
+                    return "True"
+                }
+                else {
+                    $("#Fan").css("color", "red");
+                    return "False"
+                }
+            });
+            $("#door").html(function () {
+                if (!!parseInt(data['variables']['Vent'])) {
+                    $("#door").css("color", "green");
+                    return "True"
+                }
+                else {
+                    $("#door").css("color", "red");
+                    return "False"
+                }
+            });
+            $("#motors").html(function () {
+                if (!!parseInt(data['variables']['Motor_F']) || !!parseInt(data['variables']['Motor_B']) || !!parseInt(data['variables']['Motor_L']) || !!parseInt(data['variables']['Motor_R']) ){
+                    $("#motors").css("color", "green");
+                    return "True"
+                }
+                else{
+                    $("#motors").css("color", "red");
+                    return "False"
+                }
+            });
+
+            $("#Temp").html(data['variables']['air_temp_out'] + ' °C').toString();
+            $("#Hum").html(data['variables']['air_hum_out'] + ' %').toString();
+            $("#sun").html(data['variables']['sunlight_out'] + ' %').toString();
+            $("#temp_in").html(data['variables']['air_temp_in'] + ' °C').toString();
+            $("#hum_in").html(data['variables']['air_hum_in'] + ' %').toString();
+            $("#soil_hum").html(data['variables']['soil_hum'] + ' %').toString();
+            $("#soil_temp").html(data['variables']['soil_temp'] + ' °C').toString();
+        });
+    </script>
+{% endblock %}

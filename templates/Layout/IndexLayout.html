@@ -89,14 +89,15 @@
                 </a>
             </li>
             {% block ListItems %}{% endblock %}
-            <li><a href="/">Dashboard</a></li>
-            <li><a href="/composts">Composts</a></li>
+            <li><a href="/">Overview</a></li>
+            <li><a href="/Compost_Ilioupoli">Dashboard</a></li>
+{#            <li><a href="/composts">Composts</a></li>#}
             <li><a href="/change_compost/Compost_Ilioupoli">Controls</a></li>
             <li><a href="/settings">Settings</a></li>
-            <li><a href="/log">Log{% if log|count > 0 %}
-                <span class="badge">{{ log|count }}</span>{% endif %}</a></li>
-            <li><a href="/errors">Errors{% if eerrors|count > 0 %}
-                <span class="badge" style="background:#ff574b">{{ eerrors|count }}</span>{% endif %}</a>
+            <li><a href="/log">Log
+                <span id="logs" class="badge">{{ log|count }}</span></a></li>
+            <li><a href="/errors">Errors
+                <span id="errors" class="badge" style="background:#ff574b">{{ eerrors|count }}</span></a>
             </li>
             {#            <li><a href="/measurements/clear">clear measurments</a></li>#}
 
@@ -145,6 +146,13 @@
 
 <!-- Menu Toggle script -->
 <script>
+    var socket = io.connect();
+    socket.on('log_count', function (log_data) {
+        $("#logs").html(log_data);
+    });
+    socket.on('error_count', function (error_data) {
+        $("#errors").html(error_data);
+    });
 
     $("#menu-toggle").click(function (e) {
         e.preventDefault();
@@ -154,6 +162,7 @@
     {#    setInterval(function(){#}
     {#        location.reload();#}
     {#    }, 30000);#}
+
 
 </script>
 
