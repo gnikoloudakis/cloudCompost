@@ -11,7 +11,7 @@
 ### END INIT INFO
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/opt/cloud_compost
+DIR=/home/pi/PyCompost/cloudCompost
 DAEMON=$DIR/cloud_compost.py
 DAEMON_NAME=compostd
 
