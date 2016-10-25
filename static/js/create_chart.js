@@ -167,13 +167,13 @@ function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, d
     $.post('/preliminary/measurements', {m_type: mtype})
         .done(function (m_data) {
             if (m_data.length != 0) {
-                console.log(mtype);
+                //console.log(mtype);
                 for (var i = 0; i < m_data.length; i++) {
 
-                    console.log(m_data[i].m_value);
-                    console.log(Date(m_data[i].m_timestamp.$date));
+                    //console.log(m_data[i].m_value);
+                    //console.log(Date(m_data[i].m_timestamp.$date));
                     if (m_data[i].m_value) {
-                        console.log(m_data[i].m_value, m_data[i].m_timestamp.$date);
+                        //console.log(m_data[i].m_value, m_data[i].m_timestamp.$date);
                         wdata.push({
                                 x: m_data[i].m_timestamp.$date,
                                 y: m_data[i].m_value
