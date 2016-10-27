@@ -654,6 +654,7 @@ def Emergency_Stop_OFF():
     if not compost_Flags.objects(compost=compost_ID).first().Emergency_Stop:
         # sched3.add_job(log_stuff, args=['Ventilation Stopped'])
         # sched4.add_job(test_sched, None, args=['test'])
+        stopAll()
         sched4.add_job(log_stuff, 'date', run_date=datetime.now(), args=['Emergency_Stop PUSHED to OFF'])
     else:
         # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
