@@ -25,7 +25,7 @@ socketio = SocketIO(app)
 # app.config['MONGODB_USERNAME'] = 'yannis'
 # app.config['MONGODB_PASSWORD'] = 'spacegr'
 app.config['MONGODB_DB'] = 'Raspberry_compost'
-app.config['MONGODB_HOST'] = '10.0.3.84'
+app.config['MONGODB_HOST'] = '192.168.1.200'
 app.config['MONGODB_PORT'] = 27017
 app.config['MONGODB_USERNAME'] = 'compost'
 app.config['MONGODB_PASSWORD'] = 'compost'
@@ -145,7 +145,7 @@ def init():
     except requests.exceptions.ConnectionError:
         print("http error cannot connect to arduino")
         compost_ID = compost_devices.objects(name='Compost_Ilioupoli').first().id
-        arduino_ip = '10.0.3.62'
+        arduino_ip = '192.168.1.100'
         # Errors(e_timestamp=datetime.now(), error='FAILED to connect to Arduino', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to connect to Arduino'])
 
@@ -811,7 +811,7 @@ def dashboard(compost_name):
 @app.route('/init_db')
 def init_db():
     compost_devices(name='Compost_Ilioupoli', country='Greece', region='Athens', area='Ilioupoli',
-                    raspberry_ip='192.168.1.100', arduino_ip='192.168.1.200').save()
+                    raspberry_ip='192.168.1.200', arduino_ip='192.168.1.100').save()
     compost_Settings(daily_soil_backward_time='06:00am',
                      daily_steering_time='14:00pm',
                      steering_duration='60',
@@ -1129,5 +1129,5 @@ if __name__ == '__main__':
     sched3.start()
     sched4.start()
     readvariables.start()
-
     socketio.run(host='0.0.0.0', port=5000)
+    # app.run()

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="raspberry">
+  <component name="PublishConfigData">
     <serverData>
-      <paths name="raspberry">
+      <paths name="raspberry_192">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/pi/PyCompost/cloudCompost" local="$PROJECT_DIR$" web="/home/pi/PyCompost/cloudCompost" />
+            <mapping deploy="/home/pi/cloudCompost/" local="$PROJECT_DIR$" web="" />
           </mappings>
         </serverdata>
       </paths>
