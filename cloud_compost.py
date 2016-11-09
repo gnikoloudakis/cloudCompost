@@ -659,7 +659,9 @@ def Emergency_Stop_OFF():
     else:
         # Errors(e_timestamp=datetime.now(), error='Ventilation FAILED to Stop', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['Emergency_Stop FAILED to be PUSHED to OFF'])
-# 
+
+
+#
 
 def stopAll():
     # if compost_Flags.objects(compost=compost_ID).first().Motor_F:
@@ -970,16 +972,21 @@ def charts():
 
 
 @app.route('/preliminary/measurements', methods=['GET', 'POST'])
+# @socketio.on('preliminary_measurements')
 def prem_meas():
     data = request.form
+    # data = qdata
     # print(data['m_type'])
     qq = measurements.objects(m_type=data['m_type']).order_by('m_timestamp')
     # print('preliminary size is :', len(qq))
     if qq:
         if (len(qq) - 50) > 0:
             return jsonify(qq[(len(qq) - 50):])
+            # socketio.emit('preliminary_return', json.dumps(qq))
         else:
             return jsonify(qq)
+            # socketio.emit('preliminary_return', qq)
+            # pass
     else:
         return jsonify({0, 0})
 
@@ -1119,6 +1126,11 @@ def test():
         check_air_hum_inside()
         print('check air hum')
     return 'ok test'
+
+
+@socketio.on('chart_test')
+def chart_test(data):
+    socketio.emit('chart_return', {'name': 'yannis'})
 
 
 if __name__ == '__main__':

@@ -164,10 +164,15 @@ function dummy_chart(container) {
 function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, delay) {
     var wdata = [];
     var state = false;
+    var socket = io.connect();
+
     $.post('/preliminary/measurements', {m_type: mtype})
         .done(function (m_data) {
+            //socket.emit('preliminary_measurements', {m_type: mtype});
+            //socket.on('preliminary_return', function(q_data){
+            //        var m_data = JSON.parse(qdata);
             if (m_data.length != 0) {
-                //console.log(mtype);
+                console.log(mtype);
                 for (var i = 0; i < m_data.length; i++) {
 
                     //console.log(m_data[i].m_value);
@@ -189,12 +194,12 @@ function create_chart(container, type, mtype, title, seriestext, xaxis, yaxis, d
                     }
                 }
             }
-            else{
+            else {
                 wdata.push({
-                                x: 0,
-                                y: 0
-                            }
-                        );
+                        x: 0,
+                        y: 0
+                    }
+                );
             }
             //console.log(wdata);
             $(container).highcharts({

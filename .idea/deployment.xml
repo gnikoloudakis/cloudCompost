@@ -5,7 +5,7 @@
       <paths name="raspberry">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/pi/PyCompost/cloudCompost" local="$PROJECT_DIR$" web="/home/pi/PyCompost/cloudCompost" />
+            <mapping deploy="/var/www/cloudCompost" local="$PROJECT_DIR$" web="/var/www/cloudCompost" />
           </mappings>
         </serverdata>
       </paths>

@@ -61,6 +61,8 @@
 
     {#              HIGHCHARTS             #}
     <script src="/static/highcharts/highcharts.js"></script>
+    <script src="/static/highcharts/exporting.js"></script>
+    <script src="/static/highcharts/boost.js"></script>
     <script src="/static/js/create_chart.js"></script>
 
     {#   BOOTSTRAP SWITCHES      #}
@@ -68,7 +70,7 @@
     <script type="text/javascript" src="/static/switch/js/bootstrap-switch.min.js"></script>
 
     {#  SOCKET IO LIBRARY#}
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script type="text/javascript" src="/static/js/socket.io.min.js"></script>
 
     {% block head %}{% endblock %}
 </head>
@@ -142,7 +144,7 @@
 </div>
 
 
-{% block javascript %}{% endblock %}
+{% block javascript %}
 
 <!-- Menu Toggle script -->
 <script>
@@ -165,7 +167,7 @@
 
 
 </script>
-
+{% endblock %}
 
 </body>
 </html>
