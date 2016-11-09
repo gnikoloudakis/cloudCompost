@@ -2,10 +2,10 @@
 <project version="4">
   <component name="PublishConfigData" serverName="raspberry" persistUploadOnCheckin="false">
     <serverData>
-      <paths name="raspberry">
+      <paths name="raspberry_192">
         <serverdata>
           <mappings>
-            <mapping deploy="/var/www/cloudCompost" local="$PROJECT_DIR$" web="/var/www/cloudCompost" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
