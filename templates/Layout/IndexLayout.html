@@ -148,7 +148,7 @@
 
 <!-- Menu Toggle script -->
 <script>
-    var socket = io.connect();
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
     socket.on('log_count', function (log_data) {
         $("#logs").html(log_data);
     });

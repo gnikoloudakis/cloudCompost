@@ -2,11 +2,12 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="f133ead8-1e26-4d78-bfb2-ea0644ec8f28" name="raspberry" url="http://10.0.3.84">
-        <fileTransfer host="10.0.3.84" port="21" password="dfd8dfcbdfd9dfdadfc8dfcfdfd8dfd8dfd3" username="pi">
+      <webServer id="cdfe8a9d-51b5-4ef2-b7f5-935efc60606c" name="raspberry_192" url="http://192.168.1.200">
+        <fileTransfer host="192.168.1.200" port="22" accessType="SFTP">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>
+          <option name="port" value="22" />
         </fileTransfer>
       </webServer>
     </option>
