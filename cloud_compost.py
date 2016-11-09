@@ -19,16 +19,16 @@ app.config['SECRET_KEY'] = os.urandom(128)
 socketio = SocketIO(app)
 
 # MongoDB config
-# app.config['MONGODB_DB'] = 'temu_compost'
-# app.config['MONGODB_HOST'] = 'ds025583.mlab.com'
-# app.config['MONGODB_PORT'] = 25583
-# app.config['MONGODB_USERNAME'] = 'yannis'
-# app.config['MONGODB_PASSWORD'] = 'spacegr'
-app.config['MONGODB_DB'] = 'Raspberry_compost'
-app.config['MONGODB_HOST'] = '10.0.3.84'
-app.config['MONGODB_PORT'] = 27017
-app.config['MONGODB_USERNAME'] = 'compost'
-app.config['MONGODB_PASSWORD'] = 'compost'
+app.config['MONGODB_DB'] = 'temu_compost'
+app.config['MONGODB_HOST'] = 'ds025583.mlab.com'
+app.config['MONGODB_PORT'] = 25583
+app.config['MONGODB_USERNAME'] = 'yannis'
+app.config['MONGODB_PASSWORD'] = 'spacegr'
+# app.config['MONGODB_DB'] = 'Raspberry_compost'
+# app.config['MONGODB_HOST'] = '10.0.3.84'
+# app.config['MONGODB_PORT'] = 27017
+# app.config['MONGODB_USERNAME'] = 'compost'
+# app.config['MONGODB_PASSWORD'] = 'compost'
 
 # Create database connection object
 db = MongoEngine(app)
@@ -1134,12 +1134,12 @@ def chart_test(data):
 
 
 if __name__ == '__main__':
-    init()
-    setupSchedulers()
-    sched.start()
-    sched2.start()
-    sched3.start()
-    sched4.start()
-    readvariables.start()
+    # init()
+    # setupSchedulers()
+    # sched.start()
+    # sched2.start()
+    # sched3.start()
+    # sched4.start()
+    # readvariables.start()
 
     socketio.run(host='0.0.0.0', port=5000)
