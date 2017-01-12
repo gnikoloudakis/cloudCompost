@@ -19,17 +19,20 @@ app.config['SECRET_KEY'] = os.urandom(128)
 socketio = SocketIO(app)
 
 # MongoDB config
-# app.config['MONGODB_DB'] = 'temu_compost'
-# app.config['MONGODB_HOST'] = 'ds025583.mlab.com'
-# app.config['MONGODB_PORT'] = 25583
-# app.config['MONGODB_USERNAME'] = 'yannis'
-# app.config['MONGODB_PASSWORD'] = 'spacegr'
-app.config['MONGODB_DB'] = 'Raspberry_compost'
-app.config['MONGODB_HOST'] = '127.0.0.1'
+app.config['MONGODB_DB'] = 'temu_compost'
+app.config['MONGODB_HOST'] = 'ds025583.mlab.com'
+app.config['MONGODB_PORT'] = 25583
+app.config['MONGODB_USERNAME'] = 'yannis'
+app.config['MONGODB_PASSWORD'] = 'spacegr'
+
+#----------------------------------------------------#
+
+# app.config['MONGODB_DB'] = 'Raspberry_compost'
+# app.config['MONGODB_HOST'] = '127.0.0.1'
 # app.config['MONGODB_HOST'] = 'raspberrycompost.ddns.net'
-app.config['MONGODB_PORT'] = 27017
-app.config['MONGODB_USERNAME'] = 'compost'
-app.config['MONGODB_PASSWORD'] = 'compost'
+# app.config['MONGODB_PORT'] = 27017
+# app.config['MONGODB_USERNAME'] = 'compost'
+# app.config['MONGODB_PASSWORD'] = 'compost'
 
 # Create database connection object
 db = MongoEngine(app)
@@ -168,7 +171,7 @@ def init():
     except requests.exceptions.ConnectionError:
         print("http error cannot connect to arduino")
         compost_ID = compost_devices.objects(name='Compost_Ilioupoli').first().id
-        arduino_ip = '10.0.3.62'
+        arduino_ip = '192.168.1.100'
         # Errors(e_timestamp=datetime.now(), error='FAILED to connect to Arduino', compost=compost_ID).save()
         sched4.add_job(error_stuff, 'date', run_date=datetime.now(), args=['FAILED to connect to Arduino'])
 
