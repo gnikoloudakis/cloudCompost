@@ -129,6 +129,24 @@ class measurements(db.Document):
 
 #############################  BASIC FUNCTIONS  ###########################
 
+def init_schedulers():
+    url = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example.sqlite'
+    sched.add_jobstore('sqlalchemy', url=url)
+    sched2.add_jobstore('sqlalchemy', url=url)
+    sched3.add_jobstore('sqlalchemy', url=url)
+    sched4.add_jobstore('sqlalchemy', url=url)
+    readvariables.add_jobstore('sqlalchemy', url=url)
+    print('To clear the alarms, delete the example.sqlite file.')
+    print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
+    try:
+        sched.start()
+        sched2.start()
+        sched3.start()
+        sched4.start()
+        readvariables.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+
 
 def init():
     try:
@@ -1135,12 +1153,13 @@ def chart_test(data):
 
 
 if __name__ == '__main__':
+    init_schedulers()
     init()
     setupSchedulers()
-    sched.start()
-    sched2.start()
-    sched3.start()
-    sched4.start()
-    readvariables.start()
+    # sched.start()
+    # sched2.start()
+    # sched3.start()
+    # sched4.start()
+    # readvariables.start()
 
     socketio.run(host='0.0.0.0', port=5000)
