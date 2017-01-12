@@ -19,20 +19,20 @@ app.config['SECRET_KEY'] = os.urandom(128)
 socketio = SocketIO(app)
 
 # MongoDB config
-app.config['MONGODB_DB'] = 'temu_compost'
-app.config['MONGODB_HOST'] = 'ds025583.mlab.com'
-app.config['MONGODB_PORT'] = 25583
-app.config['MONGODB_USERNAME'] = 'yannis'
-app.config['MONGODB_PASSWORD'] = 'spacegr'
+# app.config['MONGODB_DB'] = 'temu_compost'
+# app.config['MONGODB_HOST'] = 'ds025583.mlab.com'
+# app.config['MONGODB_PORT'] = 25583
+# app.config['MONGODB_USERNAME'] = 'yannis'
+# app.config['MONGODB_PASSWORD'] = 'spacegr'
 
 #----------------------------------------------------#
 
-# app.config['MONGODB_DB'] = 'Raspberry_compost'
-# app.config['MONGODB_HOST'] = '127.0.0.1'
-# app.config['MONGODB_HOST'] = 'raspberrycompost.ddns.net'
-# app.config['MONGODB_PORT'] = 27017
-# app.config['MONGODB_USERNAME'] = 'compost'
-# app.config['MONGODB_PASSWORD'] = 'compost'
+app.config['MONGODB_DB'] = 'Raspberry_compost'
+app.config['MONGODB_HOST'] = '127.0.0.1'
+app.config['MONGODB_HOST'] = 'raspberrycompost.ddns.net'
+app.config['MONGODB_PORT'] = 27017
+app.config['MONGODB_USERNAME'] = 'compost'
+app.config['MONGODB_PASSWORD'] = 'compost'
 
 # Create database connection object
 db = MongoEngine(app)
