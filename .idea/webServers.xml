@@ -7,6 +7,15 @@
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="91c4dcab-540f-40b9-975d-5db6de27df38" name="raspberrycompost.ddns.net" url="http://raspberrycompost.ddns.net/">
+        <fileTransfer host="raspberrycompost.ddns.net" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="21" />
         </fileTransfer>
       </webServer>
     </option>
