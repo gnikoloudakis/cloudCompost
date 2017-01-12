@@ -799,17 +799,17 @@ def test_sched(text):
 ###################################################################################################################
 ##############  SET SCHEDULERS   ##################################################################################
 def setupSchedulers():
-    readvariables.add_job(read_variables, 'interval', seconds=10, id='read_variables')  #### diavazei metrhseis ka8e 10 seconds
+    readvariables.add_job(read_variables, 'interval', seconds=10)#  #### diavazei metrhseis ka8e 10 seconds
 
-    sched.add_job(check_air_hum_inside, 'interval', minutes=30, id='check_air_hum_inside')
+    sched.add_job(check_air_hum_inside, 'interval', minutes=30)#, id='check_air_hum_inside')
 
-    sched.add_job(bring_soil_backward, 'cron', day_of_week='mon-fri', hour=datetime.strptime(compost_Settings.objects.first().daily_soil_backward_time, '%H:%M%p').hour, id='soil_backward')
+    sched.add_job(bring_soil_backward, 'cron', day_of_week='mon-fri', hour=datetime.strptime(compost_Settings.objects.first().daily_soil_backward_time, '%H:%M%p').hour)#, id='soil_backward')
 
-    sched.add_job(soil_homogenization, 'cron', day_of_week='mon-fri', hour=datetime.strptime(compost_Settings.objects.first().daily_steering_time, '%H:%M%p').hour, id='soil_homogenization')
+    sched.add_job(soil_homogenization, 'cron', day_of_week='mon-fri', hour=datetime.strptime(compost_Settings.objects.first().daily_steering_time, '%H:%M%p').hour)#, id='soil_homogenization')
 
-    sched.add_job(check_soil_hum, 'cron', day_of_week='mon-fri', hour=datetime.strptime(compost_Settings.objects.first().daily_steering_time, '%H:%M%p').hour + 1, id='check_soil_hum')
+    sched.add_job(check_soil_hum, 'cron', day_of_week='mon-fri', hour=datetime.strptime(compost_Settings.objects.first().daily_steering_time, '%H:%M%p').hour + 1)#, id='check_soil_hum')
 
-    sched.add_job(hourly_ventilation, 'interval', hours=1, id='hourly_ventilation')  ####  ka8e wra eksaerismos gia 5 lepta
+    sched.add_job(hourly_ventilation, 'interval', hours=1)#, id='hourly_ventilation')  ####  ka8e wra eksaerismos gia 5 lepta
 
     # sched.add_job(add_measurement, 'interval', seconds=10)  ####  dummy metrhseis ka8e 10 seconds
 
