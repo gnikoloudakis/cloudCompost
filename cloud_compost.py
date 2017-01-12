@@ -130,12 +130,16 @@ class measurements(db.Document):
 #############################  BASIC FUNCTIONS  ###########################
 
 def init_schedulers():
-    url = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example.sqlite'
-    sched.add_jobstore('sqlalchemy', url=url)
-    sched2.add_jobstore('sqlalchemy', url=url)
-    sched3.add_jobstore('sqlalchemy', url=url)
-    sched4.add_jobstore('sqlalchemy', url=url)
-    readvariables.add_jobstore('sqlalchemy', url=url)
+    url1 = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example1.sqlite'
+    url2 = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example2.sqlite'
+    url3 = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example3.sqlite'
+    url4 = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example4.sqlite'
+    url5 = sys.argv[1] if len(sys.argv) > 1 else 'sqlite:///' + app.root_path + os.sep + 'example5.sqlite'
+    sched.add_jobstore('sqlalchemy', url=url1)
+    sched2.add_jobstore('sqlalchemy', url=url2)
+    sched3.add_jobstore('sqlalchemy', url=url3)
+    sched4.add_jobstore('sqlalchemy', url=url4)
+    readvariables.add_jobstore('sqlalchemy', url=url5)
     print('To clear the alarms, delete the example.sqlite file.')
     print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
     try:
