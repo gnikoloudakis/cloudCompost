@@ -29,7 +29,6 @@ socketio = SocketIO(app)
 
 app.config['MONGODB_DB'] = 'Raspberry_compost'
 app.config['MONGODB_HOST'] = '127.0.0.1'
-app.config['MONGODB_HOST'] = 'raspberrycompost.ddns.net'
 app.config['MONGODB_PORT'] = 27017
 app.config['MONGODB_USERNAME'] = 'compost'
 app.config['MONGODB_PASSWORD'] = 'compost'
