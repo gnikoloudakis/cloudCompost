@@ -216,7 +216,7 @@ def read_variables():
 
 
 def update_variables(dataDict):
-    global socketio
+
     socketio.emit('dashboard', dataDict)
 
     timestamp = datetime.now()
@@ -784,14 +784,13 @@ def soil_homogenization():
 
 
 def log_stuff(text):
-    global socketio
     Log(l_timestamp=datetime.now(), action=text, compost=compost_ID).save()
     socketio.emit('log_count', Log.objects.count())
     print('loooogggg')
 
 
 def error_stuff(text):
-    global socketio
+
     Errors(e_timestamp=datetime.now(), error=text, compost=compost_ID).save()
     socketio.emit('error_count', Errors.objects.count())
     print('errrrroorrrr')
@@ -1100,7 +1099,7 @@ def update_controls():
 
 @app.route('/test', methods=['GET', 'POST'])
 def test():
-    global socketio
+
     atest = request.args.get('test')
     if atest == 'sh':
         print(1)
@@ -1159,12 +1158,12 @@ def test():
 
 @socketio.on('chart_test')
 def chart_test(data):
-    global socketio
+
     socketio.emit('chart_return', {'name': 'yannis'})
 
 
 if __name__ == '__main__':
-    global socketio
+
     init_schedulers()
     init()
     setupSchedulers()
