@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/cloud_compost.py" line="1176" />
+    <bookmark url="file://$PROJECT_DIR$/cloud_compost.py" line="1175" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0ade89bf-227e-4e9e-ab92-d62640f2bcdb" name="Default" comment="12/1/2017a">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/cloud_compost.iml" afterPath="$PROJECT_DIR$/.idea/cloud_compost.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cloud_compost.py" afterPath="$PROJECT_DIR$/cloud_compost.py" />
     </list>
@@ -35,8 +33,8 @@
       <file leaf-file-name="cloud_compost.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/cloud_compost.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="811" column="89" lean-forward="false" selection-start-line="811" selection-start-column="89" selection-end-line="811" selection-end-column="89" />
+            <state relative-caret-position="165">
+              <caret line="276" column="45" lean-forward="false" selection-start-line="276" selection-start-column="45" selection-end-line="276" selection-end-column="45" />
               <folding>
                 <element signature="e#24#91#0" expanded="true" />
               </folding>
@@ -717,7 +715,14 @@
       <option name="project" value="LOCAL" />
       <updated>1484216111506</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="12/1/2017a">
+      <created>1488713730745</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1488713730745</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TodoView">
@@ -1154,8 +1159,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/cloud_compost.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="811" column="89" lean-forward="false" selection-start-line="811" selection-start-column="89" selection-end-line="811" selection-end-column="89" />
+        <state relative-caret-position="165">
+          <caret line="276" column="45" lean-forward="false" selection-start-line="276" selection-start-column="45" selection-end-line="276" selection-end-column="45" />
           <folding>
             <element signature="e#24#91#0" expanded="true" />
           </folding>
